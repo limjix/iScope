@@ -1,0 +1,12 @@
+void keymap_init(keys **retkey,char *kybcfg);
+void keymap_close(keys *keymap);
+int keymap_islayer(keys *keymap,unsigned lyrhash);
+unsigned keymap_getlayer(keys *keymap,char ch);
+int keymap_isshowhide(keys *keymap,char ch);
+unsigned keymap_getshowhide(keys *keymap,char ch,unsigned renderlogic);
+int keymap_ismovezoom(keys *keymap,char ch);
+char keymap_getmovezoom(keys *keymap,char ch);
+int keymap_isrefresh(keys *keymap,char ch);
+char keymap_getrefresh(keys *keymap,char ch);
+int keymap_isstream(keys *keymap,char ch);
+char keymap_getstream(keys *keymap,char ch);

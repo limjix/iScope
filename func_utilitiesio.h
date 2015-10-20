@@ -1,0 +1,15 @@
+unsigned str_hash(char *name);
+int str_length(char *string);
+char str_match(char *buffer,char *string);
+int str_toint(char *buffer);
+char isnumber(char ch);
+int getnumber(char ch);
+char iskeyword(char *buffer);
+unsigned getkeyword(char *buffer);
+char isdelimiter(char ch);
+unsigned getdelimiter(char ch);
+char isletter(char ch);
+int invalidptr(int line,char *filename,const char *function,char action,void *addr);
+void *imalloc(int line,char *filename,const char *function,char action,size_t space);
+void *ifree(int line,char *filename,const char *function,char action,void *addr);
+void iheap(void);
