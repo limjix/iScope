@@ -1,5 +1,5 @@
 #include "export.h"
-//
+
 //gcc -g -fPIC -c export.c && gcc -g -fPIC -dynamiclib -o libexport.dylib export.o -lpng -L. -lutilities
 
 void export_png(char *filename,int width,int height,uint8_t *red,uint8_t *green,uint8_t *blue)
