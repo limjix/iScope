@@ -1,1 +1,139 @@
 0128                                                                                                                           
+<0001 context c:0 active
+                                                                                                      
+<0002 context b:1 active by proxy
+                                                                                             
+<0003 click failed
+                                                                                                            
+<0004 context c:0 active
+                                                                                                      
+<0005 john.testhelloworld<-xclient:xclient;                                                                                    
+<0006 Hello World                                                                                                              
+<0007 context c:0 active
+                                                                                                      
+<0008 john.testhelloworld<-xclient:xlclient;                                                                                   
+<0009 john.testhelloworld<-xclient:xclient;                                                                                    
+<0010 Hello World                                                                                                              
+<0011 context b:1 active by proxy
+                                                                                             
+<0012 click failed
+                                                                                                            
+<0013 context c:0 active
+                                                                                                      
+<0014 john.testhelloworld<-xclient:xclient;                                                                                    
+<0015 Hello World                                                                                                              
+<0016 context c:0 active
+                                                                                                      
+<0017 context b:1 active by proxy
+                                                                                             
+<0018 click failed
+                                                                                                            
+<0019 context b:1 active by proxy
+                                                                                             
+<0020 click failed
+                                                                                                            
+<0021 context b:1 active by proxy
+                                                                                             
+<0022 click failed
+                                                                                                            
+<0023 context b:1 active by proxy
+                                                                                             
+<0024 click failed
+                                                                                                            
+<0025 context b:1 active by proxy
+                                                                                             
+<0026 click failed
+                                                                                                            
+<0027 context b:1 active by proxy
+                                                                                             
+>0028 button_1c2 'dummy', for panel 0
+                                                                                         
+<0029 context b:1 active by proxy
+                                                                                             
+>0030 button_1c2 'dummy', for panel 0
+                                                                                         
+<0031 context b:1 active by proxy
+                                                                                             
+<0032 click failed
+                                                                                                            
+<0033 context b:0 active by proxy
+                                                                                             
+<0034 click failed
+                                                                                                            
+<0035 context b:0 active by proxy
+                                                                                             
+<0036 click failed
+                                                                                                            
+<0037 context b:0 active by proxy
+                                                                                             
+<0038 click failed
+                                                                                                            
+<0039 context b:0 active by proxy
+                                                                                             
+<0040 click failed
+                                                                                                            
+<0041 context b:0 active by proxy
+                                                                                             
+<0042 click failed
+                                                                                                            
+<0043 context i:3 active
+                                                                                                      
+<0044 (re)initialise                                                                                                           
+<0045 context i:3 active
+                                                                                                      
+<0046 context i:3 active
+                                                                                                      
+<0047 context i:3 active
+                                                                                                      
+<0048 context i:2 active
+                                                                                                      
+<0049 (re)initialise                                                                                                           
+<0050 context i:2 active
+                                                                                                      
+<0051 context i:2 active
+                                                                                                      
+<0052 context i:2 active
+                                                                                                      
+<0053 context i:1 active
+                                                                                                      
+<0054 (re)initialise                                                                                                           
+<0055 context i:0 active
+                                                                                                      
+<0056 (re)initialise                                                                                                           
+<0057 context c:0 active
+                                                                                                      
+<0058 context i:2 active
+                                                                                                      
+<0059 context b:0 active by proxy
+                                                                                             
+>0060 button_0i0 'colourmap', for panel 2
+                                                                                     
+<0061 context c:0 active
+                                                                                                      
+<0062 context b:0 active by proxy
+                                                                                             
+>0063 button_0c0 'help', for panel 0
+                                                                                          
+<0064 reserved file extensions:                                                                                                
+<0065  .vid .eps .png                                                                                                          
+<0066 command format:                                                                                                          
+<0067 outputs<-function<-inputs                                                                                                
+<0068                                                                                                                          
+<0069 argument format:                                                                                                         
+<0070  outputobj:outputarg                                                                                                     
+<0071  inputarg:inputobj                                                                                                       
+<0072                                                                                                                          
+<0073 function call format:                                                                                                    
+<0074 library.function.uniqueid                                                                                                
+<0075 calls void *library_function(void *arglist)                                                                              
+<0076 in liblibrary.so                                                                                                         
+<0077 available libraries:                                                                                                     
+<0078  xclient                                                                                                                 
+<0079  xserver                                                                                                                 
+<0080  rpiclient                                                                                                               
+<0081  vidstream                                                                                                               
+<0082  interpret                                                                                                               
+<0083  camera                                                                                                                  
+<0084  voronoi                                                                                                                 
+<0085  delaunay                                                                                                                
+<0086  cluster                                                                                                                 

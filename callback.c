@@ -990,16 +990,30 @@ void *xclient_callback_write(void *arglist)
   // ** PASS MESSAGE TO XSERVER FOR SCREEN PRINTING ** //
   // ************************************************* //
 
-  if(dynamic_getarg(arglist,"xclient",&xptr)=='f') return NULL;
-  if(dynamic_getarg(arglist,"nchars",&argptr)=='f') return NULL; if(!invalidptr(E,argptr))  nchars=*((int *) argptr);
-  if(dynamic_getarg(arglist,"string",&argptr)=='f') return NULL; if(!invalidptr(E,argptr))  string=(char *) argptr;
+  //obligatory argument 
+  if(dynamic_getarg(arglist,"string",&argptr)=='f') return NULL;
+  if(!invalidptr(E,argptr)) string=(char *) argptr;
 
-  user=(xclient *) xptr;
-  if(invalidptr(E,user)) return NULL;
-  if(invalidptr(E,string)) return NULL;
+  //optional argument nchars
+  nchars=str_length(string);
+  if(dynamic_getarg(arglist,"nchars",&argptr)=='t')
+    if(!invalidptr(E,argptr))
+      nchars=*((int *) argptr);
 
-  request_event_write(user->window,nchars,string);
-  
+  //optional arguments
+  if(dynamic_getarg(arglist,"xclient",&xptr)=='t')
+  {
+    printf("xclient found\n");
+    if(!invalidptr(E,xptr)) user=(xclient *) xptr;
+
+    printf("user=%p user->window=%s nchars=%d string=%s\n",user,user->window,nchars,string);
+    request_event_write(user->window,nchars,string);
+  }
+  else
+  {
+    printf("\nxclient: xclient_callback_write(%s)\n\n",string);
+  }
+
   return NULL;
 }
 
