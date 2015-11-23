@@ -1,0 +1,9 @@
+<=john.testhelloworld<=xclient:xclient;
+
+nnodes:nnodes,nodelist:nodelist<=john.kalmaninit<=
+nnodes:nnodes,nodelist:nodelist<=john.kalmancreatenodes<=nnodes:nnodes,nodelist:nodelist,userinput:10
+<=john.linknodes<=nodelist:nodelist,nnodes:nnodes
+
+tri:hgph<=delaunay.init<=hvec:vector;
+del:hvec<=xclient.graphtovector<=hgph:tri,plot:'delaunay';
+<-xclient.view<=objname:'del',xclient:xclient,panel:2,draw:'dashline';

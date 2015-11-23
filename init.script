@@ -1,8 +1,8 @@
-client_a:xclient<-xclient.init<-kybconfig:'kyb.cfg';
-client_b:xclient<-xclient.init<-kybconfig:'kyb.cfg';
-xserver.init.A<-callback:client_a,guiconfig:'gui.cfg',instance:'a';
-xserver.init.B<-callback:client_b,guiconfig:'gui4.cfg',instance:'b';
-<-xserver.init.A;
-<-xserver.init.B;
-<-xclient.close.A<-xclient:client_a;
-<-xclient.close.B<-xclient:client_b;
+client_a:xclient<=xclient.init<=kybconfig:'kyb.cfg';
+client_b:xclient<=xclient.init<=kybconfig:'kyb.cfg';
+<-xserver.init.A<=callback:client_a,guiconfig:'gui.cfg',instance:'a';
+<-xserver.init.B<=callback:client_b,guiconfig:'gui4.cfg',instance:'b';
+<=xserver.init.A<-;
+<=xserver.init.B<-;
+<=xclient.close.A<=xclient:client_a;
+<=xclient.close.B<=xclient:client_b;

@@ -358,21 +358,23 @@ void init_features(xsrv *x,int ctr)
   XClearWindow(x->dis,x->win);  
   XSetForeground(x->dis,x->rgbgc,get_palette_grey(x,BLACK));
   for(ibx=0;ibx<x->wbox->nsboxes;ibx++)
-    if(x->wbox->submem=='t'&&!invalidptr(E,x->wbox->sbox))
-    {
-      box=x->wbox->sbox[ibx]; 
-      XDrawRectangle(x->dis,x->win,x->rgbgc,box->xmin,box->ymin,box->xmax-box->xmin,box->ymax-box->ymin);
-    }
+    if(x->wbox->submem=='t')
+      if(!invalidptr(E,x->wbox->sbox))
+      {
+        box=x->wbox->sbox[ibx]; 
+        XDrawRectangle(x->dis,x->win,x->rgbgc,box->xmin,box->ymin,box->xmax-box->xmin,box->ymax-box->ymin);
+      }
   
   //set context-dependent button arrays from gui configuration file
   ibpan=0;
   for(ibx=0;ibx<x->wbox->nsboxes;ibx++)
-    if(x->wbox->submem=='t'&&!invalidptr(E,x->wbox->sbox))
-      if(x->wbox->sbox[ibx]->ccontext=='b')
-      {
-        init_buttonboxes(x,x->wbox->sbox[ibx],ibpan);
-	ibpan++;
-      }
+    if(x->wbox->submem=='t')
+      if(!invalidptr(E,x->wbox->sbox))
+        if(x->wbox->sbox[ibx]->ccontext=='b')
+        {
+          init_buttonboxes(x,x->wbox->sbox[ibx],ibpan);
+	  ibpan++;
+        }
 
   maxchars=HISTLINE; 
 
@@ -766,6 +768,7 @@ void init_buttonboxes(xsrv *x,xbox *box,int ibuttonpanel)
 {
   FILE *fptr;
   char fline[MAXLEN];
+  char string[MAXLEN];
   int totbuttons;
   int buttonspace;
   int icontext;
@@ -845,28 +848,29 @@ void init_buttonboxes(xsrv *x,xbox *box,int ibuttonpanel)
 
     //allocate sub-boxes for each *potential* button there could be
     box->sbox=NULL;
-    box->sbox=(xbox **)imalloc(E,buttonspace*sizeof(xbox *));
+    box->sbox=(xbox **)imalloc(E,totbuttons*sizeof(xbox *)); //seg faulted with buttonspace
 
     if(!invalidptr(E,box->sbox)&&
        !invalidptr(E,ctxtmap)&&
        !invalidptr(E,nbuttons))
     {
+      box->submem='t';
+
       ibx=0;
       for(ib=0;ib<totbuttons;ib++)
         if(!feof(fptr))
         {
-          //read button definitions
+	  //read button definitions
+          memset(string,0,sizeof(char)*MAXLEN);
+	  fgets(string,MAXLEN,fptr);
           memset(fline,0,sizeof(char)*MAXLEN);
-          fscanf(fptr,"button_%d%c%d=%s\n",&ip,&ccontext,&ibutton,fline);
-         
-          if(!invalidptr(E,box->sbox)&&ip==ibuttonpanel) //only read buttons associated with this panel
+          sscanf(string,"button_%d%c%d=%s\n",&ip,&ccontext,&ibutton,fline);
+            	  
+	  if(!invalidptr(E,box->sbox)&&ip==ibuttonpanel) //only read buttons associated with this panel
 	  {
-	    if(box->submem=='f') //allocate memory for the buttons that actually appear in configuration file
-            {
-	      box->sbox[ibx]=NULL;
-	      box->sbox[ibx]=(xbox *)imalloc(E,sizeof(xbox));
-	    }
-
+	    box->sbox[ibx]=NULL;
+	    box->sbox[ibx]=(xbox *)imalloc(E,sizeof(xbox));
+          
             sbox=box->sbox[ibx]; 
 
 	    if(!invalidptr(E,sbox))
@@ -892,7 +896,7 @@ void init_buttonboxes(xsrv *x,xbox *box,int ibuttonpanel)
 		  //set dimensions of sub-box according to 1D grid index: ibutton
 		  ix=ibutton%gridnx;
                   iy=ibutton/gridnx;
-		  //printf("ibutton=%d ix=%d iy=%d gridnx=%d gridny=%d\n",ibutton,ix,iy,gridnx,gridny);
+		  //printf("sbox %p ibutton=%d ix=%d iy=%d gridnx=%d gridny=%d\n",sbox,ibutton,ix,iy,gridnx,gridny);
                   sbox->xmin=(int) (box->xmin+((float) ix/gridnx)*(box->xmax-box->xmin));
                   sbox->xmax=(int) (box->xmin+((float) (ix+1)/gridnx)*(box->xmax-box->xmin));
                   sbox->ymin=(int) (box->ymin+((float) iy/gridny)*(box->ymax-box->ymin));
@@ -919,14 +923,11 @@ void init_buttonboxes(xsrv *x,xbox *box,int ibuttonpanel)
 	  }
 	}
       box->nsboxes=ibx; //when ifreeing memory, this will only count boxes *actually* allocated; pointer array is longer but will be freed as one.
-      box->submem='t';
     }
 
     ctxtmap=ifree(E,ctxtmap);
     nbuttons=ifree(E,nbuttons);
     fclose(fptr);
-
-    //printf("debug: leaving buttonboxes\n");
   }
   else
   {
@@ -1176,8 +1177,8 @@ char mouse_in_box(xsrv *x,xbox *box,int xmouse,int ymouse)
     tx=(double) (xmouse-box->xmin)/(box->xmax-box->xmin);
     ty=(double) (ymouse-box->ymin)/(box->ymax-box->ymin);
 
-    //printf("box->xmin=%d box->ymin=%d box->xmax=%d box->ymax=%d xmouse=%d ymouse=%d tx=%f ty=%f\n",
-    //        box->xmin,box->ymin,box->xmax,box->ymax,xmouse,ymouse,tx,ty);
+//    printf("box->xmin=%d box->ymin=%d box->xmax=%d box->ymax=%d xmouse=%d ymouse=%d tx=%f ty=%f\n",
+//            box->xmin,box->ymin,box->xmax,box->ymax,xmouse,ymouse,tx,ty);
 
     if(tx>0&&tx<1&&ty>0&ty<1) return 't';
     else                      return 'f';
@@ -1730,26 +1731,29 @@ xbox *handle_mouse_panel(xsrv *x,xbox *box,int xmouse,int ymouse,int bmouse,char
   if(invalidptr(E,x)) return;
   if(invalidptr(E,box)) return;
   
-  printf("xserver: xmouse=%d ymouse=%d ccontext=%c nsboxes=%d\n",xmouse,ymouse,ccontext,box->nsboxes);
+  //printf("xserver: xmouse=%d ymouse=%d ccontext=%c nsboxes=%d\n",xmouse,ymouse,ccontext,box->nsboxes);
 
   //find the panel on which the mouse has clicked 
   ret=NULL;
   for(ibx=0;ibx<box->nsboxes;ibx++)
-    if(box->submem=='t'&&!invalidptr(E,box->sbox))
-      if(mouse_in_box(x,box->sbox[ibx],xmouse,ymouse)=='t')
-	if(!invalidptr(E,box->sbox[ibx]))
-	  if(ccontext=='n')
-	  {
-	    ret=box->sbox[ibx];
-	    printf("xserver: ibx=%d [%d:%d,%d:%d] ccontext=n box->ccontext=%c box->ipanel=%d\n",ibx,ret->xmin,ret->xmax,ret->ymin,ret->ymax,ret->ccontext,ret->ipanel);
-	  }
-	  else
-	    if(box->sbox[ibx]->ccontext==ccontext) //pick up the panel only if matches the current context
-            {
+  {
+    if(box->submem=='t')
+      if(!invalidptr(E,box->sbox))
+        if(mouse_in_box(x,box->sbox[ibx],xmouse,ymouse)=='t')
+	  if(!invalidptr(E,box->sbox[ibx]))
+	    if(ccontext=='n')
+	    {
 	      ret=box->sbox[ibx];
-	      printf("xserver: [%d:%d,%d:%d] ccontext=%c box->ccontext=%c box->ipanel=%d\n",ret->xmin,ret->xmax,ret->ymin,ret->ymax,ccontext,ret->ccontext,ret->ipanel);
+	      //printf("xserver: null ibx=%d %p [%d:%d,%d:%d] ccontext=n box->ccontext=%c box->ipanel=%d\n",ibx,ret,ret->xmin,ret->xmax,ret->ymin,ret->ymax,ret->ccontext,ret->ipanel);
 	    }
-  
+	    else
+	      if(box->sbox[ibx]->ccontext==ccontext) //pick up the panel only if matches the current context
+              {
+	        ret=box->sbox[ibx];
+	        //printf("xserver: curr ibx=%d %p [%d:%d,%d:%d] ccontext=%c box->ccontext=%c box->ipanel=%d\n",ibx,ret,ret->xmin,ret->xmax,ret->ymin,ret->ymax,ccontext,ret->ccontext,ret->ipanel);
+	      }
+  }
+
   if(!invalidptr(S,ret)) return ret;
   else return NULL;
 }
@@ -1784,8 +1788,9 @@ void handle_cmd_mouse(void *arg1,void *arg2,void *arg3)
   xmouse=carg->xmouse;
   ymouse=carg->ymouse;
   bmouse=carg->bmouse;
-
+  
   printf("xserver: calling handle_mouse_panel() from null context\n");
+  
   box=NULL;
   box=handle_mouse_panel(x,wbox,xmouse,ymouse,bmouse,'n'); //pass NULL context since this click may change the context 
   hbox=handle_find_panel(x,wbox,'h',0);
@@ -1861,19 +1866,22 @@ void handle_cmd_mouse(void *arg1,void *arg2,void *arg3)
     handle_current_context(x,wbox,&ccontext,&panel); 
 
     printf("xserver: button context, proxy context %c, panel %d\n",ccontext,panel);
-    
-    //find sub-box of bbox that matches context at this position
-    bsbox=NULL;
-    bsbox=handle_mouse_panel(x,box,xmouse,ymouse,bmouse,ccontext); 
-    if(!invalidptr(S,bsbox)) 
-      handle_button_click(x,bsbox,hbox,ccontext,panel);
-    else
+  
+    //if there is an active context
+    if(panel>=0&&ccontext!='n')
     {
-      memset(text,0,sizeof(char)*MAXLEN);
-      sprintf(text,"click failed\n");
-      handle_text_output(x,hbox,get_palette_grey(x,BLACK),hbox->ctr,str_length(text),text,'<'); 
+      //find sub-box of bbox that matches context at this position
+      bsbox=NULL;
+      bsbox=handle_mouse_panel(x,box,xmouse,ymouse,bmouse,ccontext); 
+      if(!invalidptr(S,bsbox)) 
+        handle_button_click(x,bsbox,hbox,ccontext,panel);
+      else
+      {
+        memset(text,0,sizeof(char)*MAXLEN);
+        sprintf(text,"click failed\n");
+        handle_text_output(x,hbox,get_palette_grey(x,BLACK),hbox->ctr,str_length(text),text,'<'); 
+      }
     }
-
     //don't change current context to 'b', since this would 
     //then require two clicks to re-click a button 
   }
@@ -1964,20 +1972,25 @@ void handle_current_context(xsrv *x,xbox *box,char *ctxt,int *panel)
 
   if(invalidptr(E,x)) return;
   if(invalidptr(E,box)) return;
-  
+ 
+  //defaults
+  *ctxt='n';
+  *panel=-1;
+
   //find the active panel within this box and return its context
   for(ibx=0;ibx<box->nsboxes;ibx++)
-    if(box->submem=='t'&&!invalidptr(E,box->sbox))
-    {
-      sbox=NULL;
-      sbox=box->sbox[ibx];
-      if(!invalidptr(E,sbox))
-        if(sbox->active=='t')
-	{
-          *ctxt=sbox->ccontext;
-	  *panel=sbox->ipanel;
-	}
-    }
+    if(box->submem=='t')
+      if(!invalidptr(E,box->sbox))
+      {
+        sbox=NULL;
+        sbox=box->sbox[ibx];
+        if(!invalidptr(E,sbox))
+          if(sbox->active=='t')
+	  {
+            *ctxt=sbox->ccontext;
+	    *panel=sbox->ipanel;
+	  }
+      }
 }
 
 void handle_activate_panel(xsrv *x,xbox *box)
@@ -2060,17 +2073,18 @@ xbox *handle_find_panel(xsrv *x,xbox *box,char ch,int panel)
   ret=NULL;
   done='f';
   for(ibx=0;ibx<box->nsboxes;ibx++)
-    if(box->submem=='t'&&!invalidptr(E,box->sbox))
-    { 
-      sbox=NULL;
-      sbox=box->sbox[ibx];
-      if(!invalidptr(E,sbox))
-        if(sbox->ccontext==ch&&sbox->ipanel==panel&&done=='f')
-	{
-          ret=sbox;
-	  done='t';
-	}
-    }
+    if(box->submem=='t')
+      if(!invalidptr(E,box->sbox))
+      { 
+        sbox=NULL;
+        sbox=box->sbox[ibx];
+        if(!invalidptr(E,sbox))
+          if(sbox->ccontext==ch&&sbox->ipanel==panel&&done=='f')
+	  {
+            ret=sbox;
+	    done='t';
+	  }
+      }
 
   return ret;  
 }
@@ -2087,10 +2101,11 @@ void handle_clean_cursors(xsrv *x,xbox *wbox)
   if(invalidptr(E,wbox)) return;
   
   for(ibx=0;ibx<wbox->nsboxes;ibx++)
-    if(wbox->submem=='t'&&!invalidptr(E,wbox->sbox))
-      if(!invalidptr(E,wbox->sbox[ibx]))
-	if(wbox->sbox[ibx]->ccontext=='c')
-          draw_cursor(x,wbox->sbox[ibx],WHITE); 
+    if(wbox->submem=='t')
+      if(!invalidptr(E,wbox->sbox))
+        if(!invalidptr(E,wbox->sbox[ibx]))
+	  if(wbox->sbox[ibx]->ccontext=='c')
+            draw_cursor(x,wbox->sbox[ibx],WHITE); 
 }
 
 void redraw_box(xsrv *x,xbox *box)
@@ -3104,7 +3119,7 @@ void draw_polyline(xsrv *x,xbox *box,xlyr *lyr,int npts,int *xpt,int *ypt,int *s
   if(invalidptr(E,ypt)) return;
   
 /*
-  //set clipping her for debugging
+  //set clipping here for debugging
   XSetClipMask(x->dis,lyr->rgbgc,None);
   XSetClipMask(x->dis,lyr->alphagc,None);
   XSetClipMask(x->dis,lyr->maskgc,None);

@@ -1,0 +1,3 @@
+img:rgb<=xclient.importtoraster<=file:'instant7500.png';
+<-xclient.view<=objname:'img',xclient:xclient,panel:0;
+

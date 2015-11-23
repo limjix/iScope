@@ -11,6 +11,6 @@ typedef struct xclient
   //interpreter object and function lists
   void *objlist;
   void *funclist; 
-
+  char interpret;
 } xclient;
 

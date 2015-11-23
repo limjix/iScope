@@ -2,7 +2,7 @@
 #include "head_const.h"
 #include "struct_rgb.h"
 #include "struct_svg.h"
-#include "struct_vecs.h"
+#include "struct_hvec.h"
 #include "struct_nodes.h"
 #include "struct_hgph.h"
 #include "struct_vis.h"

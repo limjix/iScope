@@ -93,7 +93,7 @@ void drawing_raster(rgb *scr,rgb *dat,int xmn,int xmx,int ymn,int ymx,char colou
     }
 }
 
-void drawing_vector(svg *scr,vecs *vdat,int xmn,int xmx,int ymn,int ymx,char colourmap)
+void drawing_vector(svg *scr,hvec *vdat,int xmn,int xmx,int ymn,int ymx,char colourmap)
 {
   int xscr,yscr;
   double vx,vy;
@@ -129,6 +129,7 @@ void drawing_vector(svg *scr,vecs *vdat,int xmn,int xmx,int ymn,int ymx,char col
     //off-screen points are rendered until clipped by the screen. 
     //examine points in pairs so that dashline is correctly clipped
     if(tx>-1&&tx<2&&ty>-1&&ty<2)
+    //if(tx>0&&tx<1&&ty>0&&ty<1)
     {
       vx=(double) vdat->dpt[2*ipt+1+0*vdat->npts];
       vy=(double) vdat->dpt[2*ipt+1+1*vdat->npts];
@@ -194,6 +195,7 @@ void drawing_vector(svg *scr,vecs *vdat,int xmn,int xmx,int ymn,int ymx,char col
 
     //use same clipping margin as above
     if(tx>-1&&tx<2&&ty>-1&&ty<2)
+    //if(tx>0&&tx<1&&ty>0&&ty<1)
     {
       //this bit of the screen requires data
       xscr=(int) (tx*scr->width);
@@ -206,6 +208,7 @@ void drawing_vector(svg *scr,vecs *vdat,int xmn,int xmx,int ymn,int ymx,char col
       ty=(double) (vy-ymn)/(ymx-ymn);
       
       if(tx>-1&&tx<2&&ty>-1&&ty<2)
+      //if(tx>0&&tx<1&&ty>0&&ty<1)
       {
         //flip coordinates  
         scr->ixpt[npts]=xscr;
@@ -424,7 +427,6 @@ void *xclient_exporttoraster(void *arglist)
     export_png((char *) filename,img->width,img->height,img->cred,img->cgreen,img->cblue);
 }
 
-//void xclient_import2raster(rgb *img,char *filename,int frame)
 void *xclient_importtoraster(void *arglist)
 {
   int ix,iy,nx,ny,pc;
@@ -516,7 +518,7 @@ void *xclient_importtoraster(void *arglist)
     img->valmem='t';
 
     arglist=NULL;
-    dynamic_putarg("xclient.rgb","img",img,SZ,&arglist);
+    dynamic_putarg("xclient.rgb","rgb",img,SZ,&arglist);
     return arglist;
   }
 
@@ -602,11 +604,10 @@ void *xclient_rastertoraster(void *arglist)
   return arglist;
 }
 
-//void xclient_vectortovector(vecs *src,vecs *dest)
 void *xclient_vectortovector(void *arglist)
 {
   void *argptr;
-  vecs *src,*dest;
+  hvec *src,*dest;
   int ipt,idim,bufsize;
 
   // ************************************************* //
@@ -618,12 +619,12 @@ void *xclient_vectortovector(void *arglist)
     printf("xclient: missing src vector to copy to dest\n");
     return NULL;
   } 
-  src=(vecs *) argptr;
+  src=(hvec *) argptr;
   if(invalidptr(E,src)) return NULL;
   
   //allocate destination
   dest=NULL;
-  dest=(vecs *)imalloc(E,sizeof(vecs));
+  dest=(hvec *)imalloc(E,sizeof(hvec));
   if(invalidptr(E,dest)) return NULL;
 
   dest->npts=src->npts;
@@ -687,11 +688,10 @@ void *xclient_vectortovector(void *arglist)
   } 
 
   arglist=NULL;
-  dynamic_putarg("xclient.vecs","dest",(void *) dest,SZ,&arglist);
+  dynamic_putarg("graph.hvec","dest",(void *) dest,SZ,&arglist);
   return arglist;
 }
 
-//void xclient_graphtovector(hgph *src,vecs *dest,unsigned plottype)
 void *xclient_graphtovector(void *arglist) 
 {
   int idim;
@@ -700,22 +700,22 @@ void *xclient_graphtovector(void *arglist)
   void *voronoi;
   unsigned plottype;
   hgph *src;
-  vecs *dest;
+  hvec *dest;
 
   // ************************************************ //
   // ** COPY NETWORK DATA TO A VECTOR DATA SUB-SET ** //
   // ************************************************ //
 
-  if(dynamic_getarg(arglist,"src",&argptr)=='f') 
+  if(dynamic_getarg(arglist,"hgph",&argptr)=='f') 
   {
-    printf("xclient: missing src graph to copy to vector dest\n");
+    printf("xclient: missing hgph to copy to vector dest\n");
     return NULL;
   } 
   src=(hgph *) argptr;
   if(invalidptr(E,src)) return NULL;
   
   plottype=str_hash("delaunay"); //default
-  if(dynamic_getarg(arglist,"plot",&argptr)=='f')
+  if(dynamic_getarg(arglist,"plot",&argptr)=='t')
   {
     if(invalidptr(E,argptr)) return NULL;
     plottype=str_hash((char *) argptr);
@@ -723,7 +723,7 @@ void *xclient_graphtovector(void *arglist)
   }
 
   dest=NULL;
-  dest=(vecs *)imalloc(E,sizeof(vecs));
+  dest=(hvec *)imalloc(E,sizeof(hvec));
   if(invalidptr(E,dest)) return NULL;
 
   //get voronoi triangulation
@@ -733,8 +733,8 @@ void *xclient_graphtovector(void *arglist)
   dynamic_putarg("std.unsigned","format",(void *) &plottype,SZ,&arglist);
   dynamic_call("voronoi","voronoi_init",'s',arglist,&voronoi);
   dynamic_wait(voronoi,&retargs);
-  if(dynamic_getarg(retargs,"npts",&argptr)=='f') return;    dest->npts=*((int *) argptr);
-  if(dynamic_getarg(retargs,"ptlist",&argptr)=='f') return;  dest->dpt=(double *) argptr;
+  if(dynamic_getarg(retargs,"npts",&argptr)=='f') return;    if(!invalidptr(E,argptr)) dest->npts=*((int *) argptr);
+  if(dynamic_getarg(retargs,"ptlist",&argptr)=='f') return;  if(!invalidptr(E,argptr)) dest->dpt=(double *) argptr;
   dynamic_closeargs(arglist);
   dynamic_closeargs(retargs);
   //voronoi_init(src->nnodes,src->nodelist,&(dest->npts),&(dest->dpt),plottype); 
@@ -761,14 +761,15 @@ void *xclient_graphtovector(void *arglist)
     for(idim=0;idim<src->ndims;idim++)
     {
       dest->mn[idim]=src->mn[idim];
-      dest->mn[idim]=src->mn[idim];
+      dest->mx[idim]=src->mx[idim];
+      printf("dest->mn[%d]=%d dest->mx[%d]=%d\n",idim,dest->mn[idim],idim,dest->mx[idim]);
     }
 
     dest->dimmem='t';
   }
 
   arglist=NULL;
-  dynamic_putarg("std.vecs","dest",(void *) dest,SZ,&arglist);     
+  dynamic_putarg("graph.hvec","hvec",(void *) dest,SZ,&arglist);     
   return arglist;
 }
 

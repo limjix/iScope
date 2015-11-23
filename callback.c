@@ -8,16 +8,17 @@ void *xclient_callback_command(void *arglist)
   void *argptr;
   void *retargs;
   void *xptr;
+  void *tokengraph;
   int panel;
   int nchars;
   char *text;
+  char script[MAXLEN];
   xclient *user;
 
-  // ******************************************************** //
-  // ** SERVER REQUESTS CLIENT TO PROCESS USER TEXT STRING ** //
-  // ******************************************************** //
+  // ********************************************************* //
+  // ** XSERVER REQUESTS CLIENT TO PROCESS USER TEXT STRING ** //
+  // ********************************************************* //
 
-  //printf("callback: callback_xserver_command()\n");
   if(dynamic_getarg(arglist,"xclient",&xptr)=='f') return NULL;
   if(dynamic_getarg(arglist,"panel",&argptr)=='f') return NULL;   if(!invalidptr(E,argptr)) panel=*((int *) argptr);
   if(dynamic_getarg(arglist,"nchars",&argptr)=='f') return NULL;  if(!invalidptr(E,argptr)) nchars=*((int *) argptr);
@@ -29,21 +30,47 @@ void *xclient_callback_command(void *arglist)
 
   printf("callback: callback from text panel %d: %s",panel,text); 
   request_event_write(user->window,str_length(text),text);    //copy user input text to screen history
+ 
+  //populate object list with interpreter and GUI variables if they don't already exist
+  if(dynamic_getarg(user->objlist,"funclist",&argptr)=='f')
+    dynamic_putarg("std.void","funclist",(void *) user->funclist,SZ,&(user->objlist));     
   
-  //append interpreter environment to argument list since (xclient *) is known here
-  arglist=NULL;
-  dynamic_putarg("std.void","funclist",user->funclist,SZ,&arglist);     
-  dynamic_putarg("std.void","objlist",user->objlist,SZ,&arglist);     
-  dynamic_putarg("std.void","xclient",xptr,SZ,&arglist);     
-  dynamic_putarg("std.char","window",(void *) user->window,SZ,&arglist);     
-  dynamic_putarg("std.int","panel",(void *) &panel,SZ,&arglist);     
-  dynamic_putarg("std.int","nchars",(void *) &nchars,SZ,&arglist);     
-  dynamic_putarg("std.char","text",(void *) text,SZ,&arglist);     
-  dynamic_call("interpret","interpret_command",'s',arglist,&interpreter);
+  if(dynamic_getarg(user->objlist,"xclient",&argptr)=='f')
+    dynamic_putarg("std.void","xclient",xptr,SZ,&(user->objlist));     
+  
+  if(dynamic_getarg(user->objlist,"window",&argptr)=='f')
+    dynamic_putarg("std.char","window",(void *) user->window,SZ,&(user->objlist));   
+  
+  if(dynamic_getarg(user->objlist,"objlist",&argptr)=='f')
+    dynamic_putarg("std.void","objlist",(void *) user->objlist,SZ,&(user->objlist)); //self-reference last
+
+  //prepare argument list according to button operation or carriage return
+  if(user->interpret=='t')
+  {
+    //strip trailing \n character from command text
+    sscanf(text,"%s\n",script);
+
+    //button-operated execution: include all the default GUI variables and pass a script (without 'quotes')
+    arglist=NULL;
+    dynamic_putarg("std.void","funclist",(void *) user->funclist,SZ,&arglist);     
+    dynamic_putarg("std.void","xclient",xptr,SZ,&arglist);     
+    dynamic_putarg("std.char","window",(void *) user->window,SZ,&arglist);
+    dynamic_putarg("std.void","objlist",(void *) user->objlist,SZ,&arglist);
+    dynamic_putarg("std.char","script",(void *) script,SZ,&arglist);     
+    user->interpret='f';
+  }
+  else
+  {
+    arglist=NULL;
+    dynamic_putarg("std.void","objlist",(void *) user->objlist,SZ,&arglist); //pass memory space to runtime
+    dynamic_putarg("std.char","segment",(void *) text,SZ,&arglist);
+  }
+
+  //execute user command
+  dynamic_call("interpret","interpret_code",'s',arglist,&interpreter);
   dynamic_wait(interpreter,&retargs);
   dynamic_closeargs(arglist);
-  dynamic_getarg(retargs,"funclist",&(user->funclist));  //retrieve updated environment variables
-  dynamic_getarg(retargs,"objlist",&(user->objlist));
+  dynamic_getarg(retargs,"objlist",&(user->objlist));  //retrieve updated object list
   dynamic_closeargs(retargs);
 
   return NULL; 
@@ -156,13 +183,13 @@ void *xclient_callback_button(void *arglist)
 
     sprintf(cmdlist,"reserved file extensions:\n .vid .eps .png\n");
     sprintf(cmdlist,"%scommand format:\n",cmdlist);
-    sprintf(cmdlist,"%soutputs<-function<-inputs\n",cmdlist);
+    sprintf(cmdlist,"%soutputs<=function<=inputs\n",cmdlist);
     sprintf(cmdlist,"%s\n",cmdlist);
 
     request_event_write(user->window,str_length(cmdlist),cmdlist);
     memset(cmdlist,0,MAXLEN*sizeof(char)); 
 
-    sprintf(cmdlist,"argument format:\n",cmdlist);
+    sprintf(cmdlist,"argument format:\n");
     sprintf(cmdlist,"%s outputobj:outputarg\n",cmdlist);
     sprintf(cmdlist,"%s inputarg:inputobj\n",cmdlist);
     sprintf(cmdlist,"%s\n",cmdlist);
@@ -170,27 +197,49 @@ void *xclient_callback_button(void *arglist)
     request_event_write(user->window,str_length(cmdlist),cmdlist);
     memset(cmdlist,0,MAXLEN*sizeof(char)); 
     
-    sprintf(cmdlist,"function call format:\n",cmdlist);
-    sprintf(cmdlist,"%slibrary.function.uniqueid\n",cmdlist);
-    sprintf(cmdlist,"%scalls void *library_function(void *arglist)\n",cmdlist);
-    sprintf(cmdlist,"%sin " LIBPRE "library" LIBPOST "\n",cmdlist);
+    sprintf(cmdlist,"function call format:\n");
+    sprintf(cmdlist,"%slib.func.tag calls\n",cmdlist);
+    sprintf(cmdlist,"%svoid *lib_func(void *arglist)\n",cmdlist);
+    sprintf(cmdlist,"%sin " LIBPRE "lib" LIBPOST "\n",cmdlist);
 
     request_event_write(user->window,str_length(cmdlist),cmdlist);
     memset(cmdlist,0,MAXLEN*sizeof(char));
     
-    sprintf(cmdlist,"%savailable libraries:\n",cmdlist);
+    sprintf(cmdlist,"core libraries:\n");
     sprintf(cmdlist,"%s xclient\n",cmdlist);
     sprintf(cmdlist,"%s xserver\n",cmdlist);
+    sprintf(cmdlist,"%s interpret\n",cmdlist);
+    sprintf(cmdlist,"%s dynamic\n",cmdlist);
+    sprintf(cmdlist,"%s graph\n",cmdlist);
+    sprintf(cmdlist,"%s export\n",cmdlist);
+    sprintf(cmdlist,"%s import\n",cmdlist);
+    sprintf(cmdlist,"%s utilities\n",cmdlist);
+    
+    request_event_write(user->window,str_length(cmdlist),cmdlist);
+    memset(cmdlist,0,MAXLEN*sizeof(char));
+
+    sprintf(cmdlist,"auxiliary libraries:\n");
     sprintf(cmdlist,"%s rpiclient\n",cmdlist);
     sprintf(cmdlist,"%s vidstream\n",cmdlist);
-    sprintf(cmdlist,"%s interpret\n",cmdlist);
     sprintf(cmdlist,"%s camera\n",cmdlist);
     sprintf(cmdlist,"%s voronoi\n",cmdlist);
     sprintf(cmdlist,"%s delaunay\n",cmdlist);
     sprintf(cmdlist,"%s cluster\n",cmdlist);
-
+    sprintf(cmdlist,"%s godunov\n",cmdlist);
+    
     request_event_write(user->window,str_length(cmdlist),cmdlist);
     memset(cmdlist,0,MAXLEN*sizeof(char));
+  }
+  else if(context=='c'&&str_hash(buttonname)==str_hash("script"))
+  {
+    //shortcut to correctly execute a script without typing:
+    // <-interpret.code<-xclient:xclient,window:window,objlist:objlist,
+    //
+    // script:'###'; or segment:{ }; must follow to execute properly
+
+    //pass command to xclient_callback_command with a flag
+    user->interpret='t';
+    request_event_keystroke(user->window,CRETURN,0,&panel); //any old integer will do, use panel
   }
   else
   {
@@ -430,7 +479,6 @@ void *xclient_callback_pixelclick(void *arglist)
   int ic;
   double val;
   double tx,ty;
-  int xmin,xmax,ymin,ymax;
   int xuser,yuser,userpt;
   int camnx,camny,xcen,ycen;
   uint8_t red,green,blue,alpha;
@@ -534,26 +582,19 @@ void *xclient_callback_pixelclick(void *arglist)
     if(invalidptr(S,img)) return NULL; 
     if(invalidptr(E,pan->rscreen)) return NULL; 
 
-    printf("raster_pixel offline\n");
+    printf("xclient: raster_pixel offline\n");
 
-    //map between screen space and user space
-    xmin=(img->width/2)-((pan->rscreen->width)/2);
-    xmax=(img->width/2)+((pan->rscreen->width)/2);
-    ymin=(img->height/2)-((pan->rscreen->height)/2);
-    ymax=(img->height/2)+((pan->rscreen->height)/2);
-  
-    ix=xmin+ix;
-    iy=ymin+iy;
-  
-    tx=(double) (ix-pan->scrxmn)/(pan->scrxmx-pan->scrxmn);
-    ty=(double) (iy-pan->scrymn)/(pan->scrymx-pan->scrymn);
-     
-    xuser=(int) (tx*img->width);
-    yuser=(int) (ty*img->height);
+    //real-valued position of click in screen
+    tx=(double) ix/pan->rscreen->width;
+    ty=(double) iy/pan->rscreen->height;
+
+    //integer-valued coordinate in image space
+    xuser=pan->scrxmn+tx*(pan->scrxmx-pan->scrxmn);
+    yuser=pan->scrymn+ty*(pan->scrymx-pan->scrymn);
 
     memset(text,0,sizeof(char)*MAXLEN);
 
-    if(tx>0&&tx<1&&ty>0&&ty<1)
+    if(xuser>=0&&xuser<img->width&&yuser>=0&&yuser<img->height)
     {
       userpt=xuser+yuser*img->width;
    
@@ -984,6 +1025,7 @@ void *xclient_callback_write(void *arglist)
   void *argptr;
   int nchars;
   char *string;
+  char xstring[MAXLEN];
   xclient *user;
 
   // ************************************************* //
@@ -991,29 +1033,31 @@ void *xclient_callback_write(void *arglist)
   // ************************************************* //
 
   //obligatory argument 
-  if(dynamic_getarg(arglist,"string",&argptr)=='f') return NULL;
+  if(dynamic_getarg(arglist,"string",&argptr)=='f') return NULL; 
   if(!invalidptr(E,argptr)) string=(char *) argptr;
-
+  
   //optional argument nchars
   nchars=str_length(string);
   if(dynamic_getarg(arglist,"nchars",&argptr)=='t')
-    if(!invalidptr(E,argptr))
+    if(!invalidptr(E,argptr))  
       nchars=*((int *) argptr);
 
   //optional arguments
   if(dynamic_getarg(arglist,"xclient",&xptr)=='t')
   {
-    printf("xclient found\n");
     if(!invalidptr(E,xptr)) user=(xclient *) xptr;
 
-    printf("user=%p user->window=%s nchars=%d string=%s\n",user,user->window,nchars,string);
-    request_event_write(user->window,nchars,string);
+    //ensure that string has a \n finish to print correctly
+    if(string[nchars]!='\n') sprintf(xstring,"%s\n",string);
+    else sprintf(xstring,"%s",string);
+    
+    request_event_write(user->window,str_length(xstring),xstring);
   }
   else
   {
     printf("\nxclient: xclient_callback_write(%s)\n\n",string);
   }
-
+  
   return NULL;
 }
 

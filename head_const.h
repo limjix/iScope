@@ -19,10 +19,11 @@
 #define NEWLINE '\n'
 #define STRINGEND '\0'
 #define WHITESPACE ' '
+#define ENDOFFILE EOF
 
 //conditional compilation of external libraries
 #define PTHREAD
-//#define GENI
+#define GENI
 #define XLIB
 #define PNG
 #define NETWK

@@ -33,10 +33,10 @@ void *xclient_init(void *arglist)
   user->funclist=NULL;
   user->objlist=NULL;
 
-  //self-reference this local gui interpreter environment in the object list
-  dynamic_putarg("std.void","objlist",(void *) &(user->objlist),SZ,&(user->objlist));
-  dynamic_putarg("std.void","funclist",(void *) &(user->funclist),SZ,&(user->objlist));
+  //add local gui interpreter environment to the object list
   dynamic_putarg("std.void","xclient",(void *) user,SZ,&(user->objlist));
+  dynamic_putarg("std.void","funclist",user->funclist,SZ,&(user->objlist));
+  dynamic_putarg("std.void","objlist",user->objlist,SZ,&(user->objlist)); //self-reference last
 
   //return xclient structure as an output argument
   arglist=NULL;
@@ -81,11 +81,13 @@ void *xclient_view(void *arglist)
   int ivis,ilyr;
   char *lyrname;
   rgb *img;
-  vecs *vec;
+  hvec *vec;
   
   // ********************************************* //
   // ** ADD EXISTING OBJECT TO GRAPHICAL OUTPUT ** //
   // ********************************************* //
+
+  //printf("\nxclient: xclient_view() start\n");
 
   //obligatory arguments
   if(dynamic_getarg(arglist,"xclient",&argptr)=='f') 
@@ -166,6 +168,12 @@ void *xclient_view(void *arglist)
     printf("user=%p user->pan=%p user->pan[%d]=%p\n",user,user->pan,panel,pan);
     if(invalidptr(E,pan)) return NULL;
   
+    //for vector graphics turn on the vecvisible
+    if(visual->drawhash!=str_hash("raster"))
+    {
+      pan->vecvisible='t';
+    }
+
     //expand list of visuals
     vnew=NULL;
     vnew=(vis **)imalloc(E,(pan->nvis+1)*sizeof(vis));
@@ -183,6 +191,8 @@ void *xclient_view(void *arglist)
     pan->nvis++;
     pan->visual=vnew;
 
+    printf("xclient: pan->nvis=%d\n",pan->nvis);
+
     printf("xclient: view: lyrname=%s %u\n",lyrname,str_hash(lyrname));
 
     //initialise layer
@@ -194,6 +204,8 @@ void *xclient_view(void *arglist)
     //if user arguments are wrong, ifree memory
     visual=ifree(E,visual);
   }
+ 
+  //printf("xclient: xclient_view() finish\n\n");
 
   return NULL;
 }
@@ -247,7 +259,7 @@ void screen_redraw(void *p,int panel,char command)
   svg *scv;
   rgb *scr;
   rgb *dat;
-  vecs *vec;
+  hvec *vec;
   char text[MAXLEN];
 
   // *************************** //
@@ -275,9 +287,12 @@ void screen_redraw(void *p,int panel,char command)
   done='f';
   for(ivis=0;ivis<pan->nvis;ivis++)
   {
-    printf("xclient: ivis=%d pan->visual[ivis]->drawhash=%u %u pan->visual[ivis]->namehash=%u %u\n",ivis,pan->visual[ivis]->drawhash,str_hash("raster"),pan->visual[ivis]->namehash,str_hash("img"));
+    printf("xclient: raster loop ivis=%d\n",ivis);
    
     if(pan->visual[ivis]->drawhash==str_hash("raster"))
+    {
+      printf("xclient: raster!\n");
+
       if(dynamic_getarghash(user->objlist,pan->visual[ivis]->namehash,&argptr)=='t')
       {
         if(invalidptr(E,argptr)) return; 
@@ -301,9 +316,13 @@ void screen_redraw(void *p,int panel,char command)
                              scr->cred,scr->cgreen,scr->cblue,scr->calpha);
         request_event_layer(user->window,pan->visual[ivis]->namehash,panel,pan->visual[ivis]->viewhash);
       }
+    }
   }
 
   for(ivis=0;ivis<pan->nvis;ivis++)
+  {
+    printf("xclient: vector loop ivis=%d pan->visual[ivis]->drawhash=%u %u pan->vecvisible=%c\n",ivis,pan->visual[ivis]->drawhash,str_hash("solidline"),pan->vecvisible);
+
     if(pan->vecvisible=='t'&&
        (pan->visual[ivis]->drawhash==str_hash("fillcircle")||
 	pan->visual[ivis]->drawhash==str_hash("linecircle")||
@@ -316,6 +335,8 @@ void screen_redraw(void *p,int panel,char command)
        )
       )
     {
+      printf("xclient: vector redraw\n");
+      
       fill='p';
       if(pan->visual[ivis]->drawhash==str_hash("fillsquare")||
          pan->visual[ivis]->drawhash==str_hash("fillcircle")||
@@ -332,10 +353,13 @@ void screen_redraw(void *p,int panel,char command)
       else if(pan->visual[ivis]->drawhash==str_hash("fillpolygon")) drawtype=str_hash("drawpolygon");
       else if(pan->visual[ivis]->drawhash==str_hash("linepolygon")) drawtype=str_hash("drawpolygon");
 
+      printf("xclient: search for pan->visual[ivis]->namehash=%u fill=%c\n",pan->visual[ivis]->namehash,fill);
+
       if(dynamic_getarghash(user->objlist,pan->visual[ivis]->namehash,&argptr)=='f') return;
       if(invalidptr(E,argptr)) return;
-      vec=(vecs *) argptr;	  
-      printf("xclient: vector redraw\n");
+      vec=(hvec *) argptr;	  
+
+      printf("xclient: found named object\n");
        
       if(done=='f')
       {
@@ -351,6 +375,7 @@ void screen_redraw(void *p,int panel,char command)
       request_event_vector(user->window,pan->visual[ivis]->namehash,panel,drawtype,fill,scv->npts,scv->ixpt,scv->iypt,
                            scv->isize,scv->cred,scv->cgreen,scv->cblue,scv->calpha);
       request_event_layer(user->window,pan->visual[ivis]->namehash,panel,pan->visual[ivis]->viewhash);
+    }
   }
 
   request_event_screen(user->window,str_hash("update"),panel); 

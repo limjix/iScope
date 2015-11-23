@@ -1,4 +1,0 @@
-clientdata:xclient<-xclient.init<-kybconfig:'kyb.cfg';
-xserver.init.C<-callback:clientdata,guiconfig:'gui.cfg';
-<-xserver.init.C;
-<-xclient.close<-xclient:clientdata;

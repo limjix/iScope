@@ -1,7 +1,18 @@
 #include "control.h"
 
-//tar -cvf ../iScope93_john.tar *.c *.h *.cfg *.script 
+//tar -cvf ../iScope107.tar *.cpp *.c *.h *.cfg *.script 
 
+//WISH LIST
+//@ garbage-collected memory (anti seg-fault reliability)
+//@ maintain list of open libraries (speedup function calling)
+//@ uncompressed mp4 support (video compatibility)
+//
+//MY TO DO LIST
+//@ implement destructors for object types (avoid memory leaking)
+//@ MPI-2 derived treatment of multiple address spaces in interpreter (parallel MOBILE)
+//@ for/while/if/else standard library (Turing-completeness)
+//@ log(n) octree node lookup, octree multigrid algorithm (unstructured MOBILE)
+//
 //JOHN'S TO DO LIST
 //@ spectral graph
 //@ hungarian algorithm
@@ -28,9 +39,8 @@ int main(int argc,char *argv[])
 
   // run interpreter startup script
   arglist=NULL;
-  dynamic_putarg("std.void","xclient",NULL,SZ,&arglist);
   dynamic_putarg("std.char","script",(void *) initcfg,SZ,&arglist);
-  dynamic_call("interpret","interpret_script",'s',arglist,&func);
+  dynamic_call("interpret","interpret_code",'s',arglist,&func);
   dynamic_wait(func,NULL);
   dynamic_closeargs(arglist);
 }

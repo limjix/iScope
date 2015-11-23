@@ -1,0 +1,12 @@
+img:rgb<=xclient.importtoraster<=file:'instant0500.png';
+<-xclient.view<=objname:'img',xclient:xclient,panel:0;
+binary:rgb,vector:hvec<=cluster.init<=rgb:img,brightmask:1,sizemask:1;
+<-xclient.view<=objname:'binary',xclient:xclient,panel:1;
+tri:hgph<=delaunay.init<=hvec:vector;
+del:hvec<=xclient.graphtovector<=hgph:tri,plot:'delaunay';
+<-xclient.view<=objname:'del',xclient:xclient,panel:2,draw:'dashline';
+vor:hvec<=xclient.graphtovector<=hgph:tri,plot:'voronoi';
+<-xclient.view<=objname:'vor',xclient:xclient,panel:3,draw:'dashline';
+vor:hvec<=xclient.graphtovector<=hgph:tri,plot:'voronoi';
+<-xclient.view<=objname:'vor',xclient:xclient,panel:1,draw:'dashline',render:'paint';
+
