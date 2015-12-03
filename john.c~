@@ -102,19 +102,18 @@ void *john_tnodes(void *arglist)
 */
 
 void *john_kalmaninit(void *arglist)
-{
-
+{	
 	hgph *graph;
-	graph=(hgph *)imalloc(E,sizeof(gph));
-	if(invalidptr(E,gph)) return NULL;
-
+	graph=(hgph *)imalloc(E,sizeof(hgph));
+	if(invalidptr(E,graph)) return NULL;
+	
 	//Add in nnodes and nodelist
 	graph->nnodes = 0;
 	graph->nodelist = NULL;
 
 	//Exports initialised values
 	arglist=NULL;
-	dynamic_putarg("std:hgph","hgph",graph,SZ,&arglist);
+	dynamic_putarg("graph.hgph","hgph",(void *)graph,SZ,&arglist);
 
 	return arglist;
 }
@@ -122,41 +121,48 @@ void *john_kalmaninit(void *arglist)
 void *john_kalmancreatenodes(void *arglist)
 {
 	void *argptr;
-	int input;
 	nodes *x, *mu, *prevmu;
 	hgph *graph;
-	double pos[2];
+	double *input, pos[2], prevmuval, xval, *average;
+	double userinput;
 	char strmu[MAXLEN], strx[MAXLEN], strprevmu[MAXLEN]; 
-	float average;
 
 	//Get an argument of user input
 	if(dynamic_getarg(arglist,"userinput",&argptr)=='f') return NULL;
-	if(!invalidptr(E,argptr)) input=*((int *) argptr);
+	if(!invalidptr(E,argptr)) userinput=*((double *) argptr);
 
 	//Get previous hgph struct
 	if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
 
-	//Current node iteration
+	//Allocate memory for xndata and mundata
+	input=(double *)imalloc(E,sizeof(double));
+	if(invalidptr(E,input)) return NULL;
+	average=(double *)imalloc(E,sizeof(double));
+	if(invalidptr(E,input)) return NULL;
+	*input = userinput;	
+	
+	//Current node iteration (Always starts with 1)
 	int i = (graph->nnodes/2)+1;
 
    	//Creates node mu
-	pos[0]=1;
-  	pos[1]=2;
+	pos[0]=i*5;    //x
+  	pos[1]=15;     //y
 	sprintf(strmu, "mu%d", i);
 	add_node(str_hash(strmu),pos,&(graph->nnodes),&(graph->nodelist));
 	mu=find_node(str_hash(strmu),graph->nnodes,graph->nodelist);
 	
 	//Creates node x
-	pos[0]=1;
-  	pos[1]=1;
+	pos[0]=i*5;    //x
+  	pos[1]=1;      //y
 	sprintf(strx, "x%d", i);
 	add_node(str_hash(strx),pos,&(graph->nnodes),&(graph->nodelist));
 	x=find_node(str_hash(strx),graph->nnodes,graph->nodelist);
 
 	//Adds directed edge between mu and x
 	add_diredge(mu,x);
-
+	
+	prevmu = NULL;
 	//If previous mu exists, links current mu to previous mu
 	if(graph->nnodes>2)
 	{	
@@ -166,71 +172,160 @@ void *john_kalmancreatenodes(void *arglist)
 	}	
 
 
-	//Populates x payload with uservalue.
-	x->ndata= &input;
+	//Populates x payload with uservalue
+	x->ndata= input;
 
 	//Average mu and save
-	average = ((i-1)*(prevmu->ndata)+(x->ndata))/i;
-	mu->ndata=&average;
+	if(prevmu != NULL)
+	{
+	prevmuval = *((double*) prevmu->ndata);
+	xval = *((double*) x->ndata);
+	*average = ((i-1)*(prevmuval)+(xval))/i;
+	mu->ndata= average;
+	}
+	else
+	{
+	mu->ndata=input;
+	}
 
 	//Output to arglist
 	arglist=NULL;
-	dynamic_putarg("std:hgph","hgph",graph,SZ,&arglist);
+	dynamic_putarg("graph.hgph","hgph",(void*) graph,SZ,&arglist);
 
 	return arglist; 
+
 }
-
-
-
-
-/*void *john_linknodes(void *arglist)
-{
-	int nnodes;
-        nodes **nodelist;
-	nodes *node1, *node2;
-
-	//Get previous nodelist
-	if(dynamic_getarg(arglist,"nodelist",&nodelist)=='f') return NULL;
-	//Get previous nnodes
-	if(dynamic_getarg(arglist,"nnodes",&nnodes)=='f') return NULL;
-	
-	//Identifies those nodes
-	node1=find_node(str_hash("mu"),nnodes,nodelist);
-	node2=find_node(str_hash("x"),nnodes,nodelist);
-
-	//Adds a directed edge to them
-	add_diredge(node1,node2);
-	
-	//Output to arglist
-	dynamic_putarg("std:int","nnodes",nnodes,SZ,&arglist);
-	dynamic_putarg("std:int","nodelist",nodelist,SZ,&arglist);
-	return arglist;
-}
-*/
 
 
 void *john_makeplotvector(void *arglist)
 {
 	void *argptr;
 	hgph *graph;
+	hvec *vector;
+	nodes *mu;
+	char strmu[MAXLEN];
+	double *muval;
+	int index;
 
 	//Get previous hgph struct
 	if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
 
-	
-}
+	//Allocates memory for vector
+	vector=(hvec *)imalloc(E,sizeof(hvec));
+	if(invalidptr(E,vector)) return NULL;
 
+	//Some init parameters (Needed in order to use xclient view - all must be filled)
+	vector->mn=(int *)imalloc(E,2*sizeof(int));
+	vector->mx=(int *)imalloc(E,2*sizeof(int));
+	if(invalidptr(E,vector->mn)) return NULL;
+	if(invalidptr(E,vector->mx)) return NULL;
+	vector->mn[0] = 75;
+	vector->mn[1] = 75;
+	vector->mx[0] = 85;
+	vector->mx[1] = 85;
+	vector->ndims = 2;
+        vector->nvals=0;
+	vector->dimmem ='t';
+	vector->valmem='f';
+        vector->posmem='t';
+	
+	//Current node iteration
+	int i = (graph->nnodes/2);
+	vector->npts = i;
+
+	//Allocate memory for vec->dpt
+	vector->dpt=(double* )imalloc(E,vector->npts*2*sizeof(double));
+	if(invalidptr(E,vector->dpt)) return NULL;
+	
+	//Finds nodes iteratively and collects plot data
+	for(index = 1; index<=i; index++)
+	{
+		//Finds mu
+		sprintf(strmu, "mu%d", index);		
+		mu=find_node(str_hash(strmu),graph->nnodes,graph->nodelist);
+		muval = (double*) mu->ndata;
+		
+		//Adds data to vector to plot
+		vector->dpt[index] = index;
+		vector->dpt[vector->npts+index] = *muval;
+	} 
+
+	//Output to arglist
+	arglist=NULL;
+	dynamic_putarg("vector.hvec","hvec",(void*)vector,SZ,&arglist);
+	return arglist;
+
+}
 
 void *john_testfunc(void *arglist)
-{	int i;
-	char test[MAXLEN];
+{	
+  int idim;
+  hgph *gph;
 
-	sprintf(test,"mu%d",i);
-	printf("test");
+  void *argptr;
+  hvec *vec;
 
-	return NULL;
+  // ******************************** //
+  // ** RUN DELAUNAY TRIANGULATION ** //
+  // ******************************** //
+
+
+  //Gets hvec
+  if(dynamic_getarg(arglist,"hvec",&argptr)=='f')
+  {
+    printf("delaunay: no points to triangulate\n");
+    return NULL;
+  }
+
+  if(invalidptr(E,argptr)) return NULL;
+  vec=(hvec *) argptr;
+
+  //Gets hgph structure
+  if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
+  if(!invalidptr(E,argptr)) gph=(hgph *) argptr;
+
+  printf("delaunay: triangulating\n");
+
+  //allocate space for output
+  //gph=NULL;
+  //gph=(hgph *)imalloc(E,sizeof(hgph));
+  //if(invalidptr(E,gph)) return NULL;
+
+  if(invalidptr(E,vec->dpt)) return NULL;
+  /* YOUR GRAPH INITIALISATION*/
+
+  //copying this bounding information is crucial to set display
+  gph->ndims=vec->ndims;
+  if(gph->dimmem!='t'&&vec->ndims>0)
+  {
+    gph->mn=NULL;
+    gph->mx=NULL;
+    gph->mn=(int *)imalloc(E,vec->ndims*sizeof(int));
+    gph->mx=(int *)imalloc(E,vec->ndims*sizeof(int));
+    if(invalidptr(E,gph->mn)) return NULL;
+    if(invalidptr(E,gph->mx)) return NULL;
+    memset(gph->mn,0,vec->ndims*sizeof(int));
+    memset(gph->mx,0,vec->ndims*sizeof(int));
+
+    for(idim=0;idim<vec->ndims;idim++)
+    {
+      gph->mn[idim]=vec->mn[idim];
+      gph->mx[idim]=vec->mx[idim];
+    }
+  }
+
+  gph->nodemem='t';
+
+  printf("delaunay: finished\n");
+
+  arglist=NULL;
+  dynamic_putarg("graph.hgph","hgph",(void *) gph,SZ,&arglist);
+  return arglist;
 
 }
+
+//Whenever you need to store data into a structure, you need to allocate memory..
+//If not the pointer points to some irrelevant box because the stack has been wiped.
 
 

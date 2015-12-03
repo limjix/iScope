@@ -1,8 +1,63 @@
 0128                                                                                                                           
 <0001 context c:0 active
                                                                                                       
-<0002 context c:0 active
+<0002 context b:0 active by proxy
+                                                                                             
+>0003 button_0c1 'script', for panel 0
+                                                                                        
+<0004 tj.script                                                                                                                
+<0005 redraw panel 3 : reset                                                                                                   
+<0006 redraw panel 2 : reset                                                                                                   
+<0007 context i:3 active
                                                                                                       
-<0003 <=john.testhelloworld<=xclient:xclient;                                                                                  
-<0004 Hello World1                                                                                                             
-<0005                                                                                                                          
+<0008 redraw panel 3 : reset                                                                                                   
+<0009 (re)initialise                                                                                                           
+<0010 redraw panel 3 : in                                                                                                      
+<0011 redraw panel 3 : in                                                                                                      
+<0012 redraw panel 3 : in                                                                                                      
+<0013 redraw panel 3 : in                                                                                                      
+<0014 context c:0 active
+                                                                                                      
+<0015 context b:0 active by proxy
+                                                                                             
+>0016 button_0c1 'script', for panel 0
+                                                                                        
+<0017 tj.script                                                                                                                
+<0018 redraw panel 3 : reset                                                                                                   
+<0019 redraw panel 2 : reset                                                                                                   
+<0020 context i:3 active
+                                                                                                      
+<0021 redraw panel 3 : in                                                                                                      
+<0022 redraw panel 3 : in                                                                                                      
+<0023 redraw panel 3 : in                                                                                                      
+<0024 redraw panel 3 : in                                                                                                      
+<0025 context c:0 active
+                                                                                                      
+<0026 context b:0 active by proxy
+                                                                                             
+>0027 button_0c1 'script', for panel 0
+                                                                                        
+<0028 tj.script                                                                                                                
+<0029 redraw panel 3 : reset                                                                                                   
+<0030 redraw panel 2 : reset                                                                                                   
+<0031 context i:3 active
+                                                                                                      
+<0032 redraw panel 3 : in                                                                                                      
+<0033 redraw panel 3 : in                                                                                                      
+<0034 redraw panel 3 : in                                                                                                      
+<0035 redraw panel 3 : in                                                                                                      
+<0036 context c:0 active
+                                                                                                      
+<0037 context b:0 active by proxy
+                                                                                             
+>0038 button_0c1 'script', for panel 0
+                                                                                        
+<0039 tj.script                                                                                                                
+<0040 redraw panel 3 : reset                                                                                                   
+<0041 redraw panel 2 : reset                                                                                                   
+<0042 context i:3 active
+                                                                                                      
+<0043 redraw panel 3 : in                                                                                                      
+<0044 redraw panel 3 : in                                                                                                      
+<0045 redraw panel 3 : in                                                                                                      
+<0046 redraw panel 3 : in                                                                                                      
