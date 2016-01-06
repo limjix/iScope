@@ -9,7 +9,7 @@
 #include "struct_keys.h"
 #include "struct_hobj.h"
 #include "struct_xclient.h"
-#include "struct_hvecs.h"
+#include "struct_hvec.h"
 
 #include "func_callbackio.h"
 #include "func_dynamicio.h"

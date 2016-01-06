@@ -91,13 +91,7 @@ void *john_tnodes(void *arglist)
 }
 
 
-/*   What Is the plan? 
-    Function - I want the user to input a value
-    Function - Once its done, it creates 2 new nodes (mu and x) and populates x
-    Function - Links mu and x with directed edge
-    Function - Does a running average of x and updates mu
-    Function - Creates a vector of updated mu and x number
-    Script (after this its smooth sailing)- It plots the vector to show updated mu as x changes
+/*   Kalman
 
 */
 
@@ -258,7 +252,7 @@ void *john_makeplotvector(void *arglist)
 
 }
 
-void *john_testfunc(void *arglist)
+void *john_nodeplot(void *arglist)
 {	
   int idim;
   hgph *gph;
@@ -327,5 +321,298 @@ void *john_testfunc(void *arglist)
 
 //Whenever you need to store data into a structure, you need to allocate memory..
 //If not the pointer points to some irrelevant box because the stack has been wiped.
+
+//--------------------------------------------------------------------------------------------------
+//----------------------------------- Some utilities------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+void add_hfactortondata(nodes *curr,hfactor *hfac)
+{  // ******************************** //
+  // ** Appends hfactor to ndata ** //
+  // ******************************** //
+	if(invalidptr(E,curr)) return;
+        if(invalidptr(E,hfac)) return;
+	curr->ndata = hfac;
+
+}
+
+hfactor *create_hfactor()
+{  // ********************************************* //
+  // ** Create a Hfactor node , allocates memory ** //
+  // ********************************************** //
+	hfactor *newhfac;
+	newhfac =(hfactor *)imalloc(E,sizeof(hfactor));
+	if(invalidptr(E,newhfac)) return;
+
+	return newhfac;
+}
+
+
+
+nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph)
+{	
+//--------------- Easy way to create nodes -------------------------
+
+	double pos[2];
+	nodes *node;
+	if(invalidptr(E,graph)) return NULL;
+
+	pos[0]=x;     //x
+  	pos[1]=y;     //y
+	add_node(str_hash(str),pos,&(graph->nnodes),&(graph->nodelist));
+	node=find_node(str_hash(str),graph->nnodes,graph->nodelist);
+	
+	return node;
+}
+
+
+void *john_testfunc(void *arglist)
+{
+
+}
+
+//--------------------------------------------------------------------------------------------------
+//----------------------------------- Sum Product Algorithm ----------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+void *john_sumproductinit(void *arglist)
+{
+//-----------------------------Initialises the problem---------------------------------------------
+	hgph *graph;
+	graph=(hgph *)imalloc(E,sizeof(hgph));
+	if(invalidptr(E,graph)) return NULL;
+	
+	//Add in nnodes and nodelist
+	graph->nnodes = 0;
+	graph->nodelist = NULL;
+
+	//Exports initialised values
+	arglist=NULL;
+	dynamic_putarg("graph.hgph","hgph",(void *)graph,SZ,&arglist);
+
+	return arglist;
+}
+
+void *john_setupproblem(void *arglist)
+{
+//--------------------------- Creates nodes and sets up model---------------------------------------
+	void *argptr;
+	nodes *x1, *fa, *x2, *fb, *x3, *fc, *x4;
+	hgph *graph;
+
+	//Get previous hgph struct
+	if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
+	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
+
+	//Sets up nodes in their places
+	x1 = createnode(1,5,"x1",graph);
+	fa = createnode(3,5,"fa",graph);
+	x2 = createnode(5,5,"x2",graph);
+	fb = createnode(7,5,"fb",graph);
+	x3 = createnode(9,5,"x3",graph);
+	fc = createnode(5,3,"fc",graph);
+	y2 = createnode(5,1,"y2",graph);
+
+
+	//Adds directed edge between mu and x
+	add_edge(x1,fa);
+	add_edge(fa,x2);
+	add_edge(x2,fb);
+	add_edge(fb,x3);
+	add_edge(x4,fc);
+	add_edge(fc,x2);
+
+	//Adds hfactor to ndata
+	add_hfactortondata(x1,create_hfactor());
+	add_hfactortondata(fa,create_hfactor());
+	add_hfactortondata(x2,create_hfactor());
+	add_hfactortondata(fb,create_hfactor());
+	add_hfactortondata(x3,create_hfactor());
+	add_hfactortondata(fc,create_hfactor());
+	add_hfactortondata(x4,create_hfactor());
+//	((hfactor *)x1->ndata)->test = 1;
+
+	//Populate Variable Payloads & specify type
+//	((hfactor *)x1->ndata)->variablepayload = 1;
+//	((hfactor *)x2->ndata)->variablepayload = 0;
+//	((hfactor *)x3->ndata)->variablepayload = 1;
+//	((hfactor *)x4->ndata)->variablepayload = 0;
+
+	((hfactor *)x1->ndata)->type = 'v';
+	((hfactor *)x2->ndata)->type = 'v';
+	((hfactor *)x3->ndata)->type = 'v';
+	((hfactor *)x4->ndata)->type = 'v';
+
+	//Create probability distribution table
+	double **probdist1;
+	probdist1 =(double **)imalloc(E,4*sizeof(double));
+
+	probdist1[0][0] = 1.0;
+	probdist1[0][1] = 0.1;
+	probdist1[1][0] = 0.1;
+	probdist1[1][1] = 1.0;
+
+	double **probdist2;
+	probdist2 =(double **)imalloc(E,4*sizeof(double));
+
+	probdist2[0][0] = 1.0;
+	probdist2[0][1] = 0.9;
+	probdist2[1][0] = 0.9;
+	probdist2[1][1] = 1.0;
+
+	double **probdist3;
+	probdist3 =(double **)imalloc(E,4*sizeof(double));
+
+	probdist3[0][0] = 0.1;
+	probdist3[0][1] = 1.0;
+	probdist3[1][0] = 1.0;
+	probdist3[1][1] = 0.1;
+
+
+	//Populate Factor Payloads
+	((hfactor *)fa->ndata)->probdist = probdist2;
+	((hfactor *)fa->ndata)->columndiscretevalues = (double *)imalloc(E,2*sizeof(double));
+	((hfactor *)fa->ndata)->rowdiscretevalues = (double *)imalloc(E,2*sizeof(double));
+	*(((hfactor *)fa->ndata)->columndiscretevalues) = {0,1};
+	*(((hfactor *)fa->ndata)->rowdiscretevalues) = {0,1};
+	((hfactor *)fa->ndata)->columnlabel = "x1";
+	((hfactor *)fa->ndata)->rowlabel = "x2";
+
+	((hfactor *)fb->ndata)->probdist = probdist3;
+	((hfactor *)fb->ndata)->columndiscretevalues = (double *)imalloc(E,2*sizeof(double));
+	((hfactor *)fb->ndata)->rowdiscretevalues = (double *)imalloc(E,2*sizeof(double));
+	*(((hfactor *)fb->ndata)->columndiscretevalues) = {0,1};
+	*(((hfactor *)fb->ndata)->rowdiscretevalues) = {0,1};
+	((hfactor *)fb->ndata)->columnlabel = "x2;
+	((hfactor *)fb->ndata)->rowlabel = "x3";
+
+	((hfactor *)fc->ndata)->probdist = probdist1;
+	((hfactor *)fc->ndata)->columndiscretevalues = (double *)imalloc(E,2*sizeof(double));
+	((hfactor *)fc->ndata)->rowdiscretevalues = (double *)imalloc(E,2*sizeof(double));
+	*(((hfactor *)fc->ndata)->columndiscretevalues) = {0,1};
+	*(((hfactor *)fc->ndata)->rowdiscretevalues) = {0,1};
+	((hfactor *)fc->ndata)->columnlabel = "x2";
+	((hfactor *)fc->ndata)->rowlabel = "y2";
+
+	((hfactor *)fa->ndata)->type = 'f';
+	((hfactor *)fb->ndata)->type = 'f';
+	((hfactor *)fc->ndata)->type = 'f';
+
+	//Output to arglist
+	arglist=NULL;
+	dynamic_putarg("graph.hgph","hgph",(void*) graph,SZ,&arglist);
+
+	return arglist; 
+}
+
+void *john_sumproductalgorithm(void *arglist)
+{
+	void *argptr;
+	hgph *graph;
+	nodes *root;
+	//Get previous hgph struct
+	if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
+	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
+
+	//Choose the root node
+	root = find_node(str_hash("x2"),graph->nnodes,graph->nodelist);
+
+	//Call the recursion step
+//	forwardtraverse(root,root, graph);
+
+	return arglist;
+}
+
+void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
+{
+//-----------------------Go down to leaf and come up
+
+	int nbranches = currentnode->nedges;
+	int nforwardbranches = nbranches - 1;
+	if(currentnode==callingnode) nforwardbranches = nbranches; //when 1st called
+	char type = currentnode->type;
+	unsigned forwardedges[nforwardbranches]; //list of edges to pursue
+	nodes *nextnode;
+	
+	//----If at leaf go up-----
+	if(nbranchesleft==0)  
+	{	
+		((hfactor *)currentnode->ndata)->forwardtraverse=1;		
+		return;
+	}
+	
+	//----If not at leaf, go down ----------
+	else	              
+	{	
+	//Copy edge list & remove calling node from the list
+		int j = 0;
+		char callingnodefound = 'f';
+		for( j; j<nbranches; j++)
+		{
+			if(callingnodefound ='f')
+			{
+			  if(currentnode->edges[j]==callingnode->nhash) 
+			    { callingnodefound = 't'; continue; }
+			  else forwardedges[j] = currentnode->edges[j];
+			}
+			else forwardedges[j-1] = currentnode->edges[j];
+		}
+
+	//RECURSION DOWN
+		int i=0;
+		for(i; i<nforwardbranches; i++)
+		{	
+			nextnode = find_node(forwardedges[i],graph->nnodes,graph->nodelist);
+			forwardtraverse(nextnode,currentnode,graph);
+		}
+	//RETURNING FROM RECURSION
+
+	//What happens on this level before going up
+		if(type == 'v') //variable -- product of factor messages
+		{
+			
+			return;			
+		}
+
+		else if(type == 'f') //factor --- sum marginals
+		{
+			
+			return;
+		}
+	}
+}
+
+void backwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
+{
+//--------------------------Go down and update nodes
+
+
+}
+
+void computefactormessage()
+{
+
+}
+
+void computevariablemessage()
+{
+
+}
+
+//--------------------------------------------------------------------------------------------------
+//----------------------------------- Linear Algebra Functions -------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+int length
+{
+
+}
+
+
+
+
+
+
+
 
 
