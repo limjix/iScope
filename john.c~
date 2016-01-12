@@ -411,7 +411,7 @@ void *john_setupproblem(void *arglist)
 	fb = createnode(7,5,"fb",graph);
 	x3 = createnode(9,5,"x3",graph);
 	fc = createnode(5,3,"fc",graph);
-	y2 = createnode(5,1,"y2",graph);
+	x4 = createnode(5,1,"y2",graph);
 
 
 	//Adds directed edge between mu and x
@@ -433,76 +433,84 @@ void *john_setupproblem(void *arglist)
 //	((hfactor *)x1->ndata)->test = 1;
 
 	//Populate Variable Payloads & specify type
-//	((hfactor *)x1->ndata)->variablepayload = 1;
-//	((hfactor *)x2->ndata)->variablepayload = 0;
-//	((hfactor *)x3->ndata)->variablepayload = 1;
-//	((hfactor *)x4->ndata)->variablepayload = 0;
-
 	((hfactor *)x1->ndata)->type = 'v';
 	((hfactor *)x2->ndata)->type = 'v';
 	((hfactor *)x3->ndata)->type = 'v';
 	((hfactor *)x4->ndata)->type = 'v';
 
-	//Create probability distribution table
-	double **probdist1;
-	probdist1 =(double **)imalloc(E,4*sizeof(double));
-
-	probdist1[0][0] = 1.0;
-	probdist1[0][1] = 0.1;
-	probdist1[1][0] = 0.1;
-	probdist1[1][1] = 1.0;
-
-	double **probdist2;
-	probdist2 =(double **)imalloc(E,4*sizeof(double));
-
-	probdist2[0][0] = 1.0;
-	probdist2[0][1] = 0.9;
-	probdist2[1][0] = 0.9;
-	probdist2[1][1] = 1.0;
-
-	double **probdist3;
-	probdist3 =(double **)imalloc(E,4*sizeof(double));
-
-	probdist3[0][0] = 0.1;
-	probdist3[0][1] = 1.0;
-	probdist3[1][0] = 1.0;
-	probdist3[1][1] = 0.1;
-
-
-	//Populate Factor Payloads
-	((hfactor *)fa->ndata)->probdist = probdist2;
-	((hfactor *)fa->ndata)->columndiscretevalues = (double *)imalloc(E,2*sizeof(double));
-	((hfactor *)fa->ndata)->rowdiscretevalues = (double *)imalloc(E,2*sizeof(double));
-	*(((hfactor *)fa->ndata)->columndiscretevalues) = {0,1};
-	*(((hfactor *)fa->ndata)->rowdiscretevalues) = {0,1};
-	((hfactor *)fa->ndata)->columnlabel = "x1";
-	((hfactor *)fa->ndata)->rowlabel = "x2";
-
-	((hfactor *)fb->ndata)->probdist = probdist3;
-	((hfactor *)fb->ndata)->columndiscretevalues = (double *)imalloc(E,2*sizeof(double));
-	((hfactor *)fb->ndata)->rowdiscretevalues = (double *)imalloc(E,2*sizeof(double));
-	*(((hfactor *)fb->ndata)->columndiscretevalues) = {0,1};
-	*(((hfactor *)fb->ndata)->rowdiscretevalues) = {0,1};
-	((hfactor *)fb->ndata)->columnlabel = "x2;
-	((hfactor *)fb->ndata)->rowlabel = "x3";
-
-	((hfactor *)fc->ndata)->probdist = probdist1;
-	((hfactor *)fc->ndata)->columndiscretevalues = (double *)imalloc(E,2*sizeof(double));
-	((hfactor *)fc->ndata)->rowdiscretevalues = (double *)imalloc(E,2*sizeof(double));
-	*(((hfactor *)fc->ndata)->columndiscretevalues) = {0,1};
-	*(((hfactor *)fc->ndata)->rowdiscretevalues) = {0,1};
-	((hfactor *)fc->ndata)->columnlabel = "x2";
-	((hfactor *)fc->ndata)->rowlabel = "y2";
-
 	((hfactor *)fa->ndata)->type = 'f';
 	((hfactor *)fb->ndata)->type = 'f';
 	((hfactor *)fc->ndata)->type = 'f';
 
+	//Create probability distribution table
+	double *probdist1;
+	probdist1 =(double *)imalloc(E,12*sizeof(double));
+
+	probdist1[0] = 1.0;
+	probdist1[1] = 0.5;
+	probdist1[2] = 0.9;
+	probdist1[3] = 0.4;
+	probdist1[4] = 0.2;
+	probdist1[5] = 3.0;
+	probdist1[6] = 2.3;
+	probdist1[7] = 9.0;
+	probdist1[8] = 0.7;
+	probdist1[9] = 0.1;
+	probdist1[10] = 1.2;
+	probdist1[11] = 1.7;
+
+	double *probdist2;
+	probdist2 =(double *)imalloc(E,4*sizeof(double));
+
+	probdist2[0] = 1.0;
+	probdist2[1] = 0.9;
+	probdist2[2] = 0.9;
+	probdist2[3] = 1.0;
+
+	double *probdist3;
+	probdist3 =(double *)imalloc(E,4*sizeof(double));
+
+	probdist3[0] = 0.1;
+	probdist3[1] = 1.0;
+	probdist3[2] = 1.0;
+	probdist3[3] = 0.1;
+
+	//Populate Factor Payloads
+	double *discretevalue = (double *)imalloc(E,2*sizeof(double));
+	discretevalue[0] = 0;
+	discretevalue[1] = 1;
+
+	((hfactor *)fa->ndata)->probdist = probdist2;
+	((hfactor *)fa->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fa->ndata)->rowdiscretevalues = discretevalue;
+	((hfactor *)fa->ndata)->columnlabel = str_hash("x1");
+	((hfactor *)fa->ndata)->rowlabel = str_hash("x2");
+	((hfactor *)fa->ndata)->nrow = 2;
+	((hfactor *)fa->ndata)->ncol = 2;
+
+	((hfactor *)fb->ndata)->probdist = probdist3;
+	((hfactor *)fb->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fb->ndata)->rowdiscretevalues = discretevalue;
+	((hfactor *)fb->ndata)->columnlabel = str_hash("x2");
+	((hfactor *)fb->ndata)->rowlabel = str_hash("x3");
+	((hfactor *)fa->ndata)->nrow = 2;
+	((hfactor *)fa->ndata)->ncol = 2;
+
+	((hfactor *)fc->ndata)->probdist = probdist1;
+	((hfactor *)fc->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fc->ndata)->rowdiscretevalues = discretevalue;
+	((hfactor *)fc->ndata)->columnlabel = str_hash("x2");
+	((hfactor *)fc->ndata)->rowlabel = str_hash("x4");
+	((hfactor *)fa->ndata)->nrow = 2;
+	((hfactor *)fa->ndata)->ncol = 2;
+
+	double* testingsum = SumRowsOrCols(probdist1,'c', 3, 4);
+
 	//Output to arglist
 	arglist=NULL;
-	dynamic_putarg("graph.hgph","hgph",(void*) graph,SZ,&arglist);
+	dynamic_putarg("graph.hgph","hgph",(void *)graph,SZ,&arglist);
 
-	return arglist; 
+	return arglist;
 }
 
 void *john_sumproductalgorithm(void *arglist)
@@ -515,12 +523,12 @@ void *john_sumproductalgorithm(void *arglist)
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
 
 	//Choose the root node
-	root = find_node(str_hash("x2"),graph->nnodes,graph->nodelist);
+	root = find_node(str_hash("fa"),graph->nnodes,graph->nodelist);
 
 	//Call the recursion step
 //	forwardtraverse(root,root, graph);
 
-	return arglist;
+	return;
 }
 
 void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
@@ -528,16 +536,21 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 //-----------------------Go down to leaf and come up
 
 	int nbranches = currentnode->nedges;
+	
+	//When further down the tree, every edge except the calling edge is forward
 	int nforwardbranches = nbranches - 1;
-	if(currentnode==callingnode) nforwardbranches = nbranches; //when 1st called
-	char type = currentnode->type;
+
+	//when 1st called, every edge is a forward edge
+	if(currentnode==callingnode) nforwardbranches = nbranches;
+
+	char type = ((hfactor*)currentnode->ndata)->type;
 	unsigned forwardedges[nforwardbranches]; //list of edges to pursue
 	nodes *nextnode;
 	
 	//----If at leaf go up-----
-	if(nbranchesleft==0)  
+	if(nforwardbranches==0)  
 	{	
-		((hfactor *)currentnode->ndata)->forwardtraverse=1;		
+		*(((hfactor *)currentnode->ndata)->forwardtraverse)=1.0;		
 		return;
 	}
 	
@@ -551,11 +564,11 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 		{
 			if(callingnodefound ='f')
 			{
-			  if(currentnode->edges[j]==callingnode->nhash) 
+			  if(currentnode->edge[j]==callingnode->nhash) 
 			    { callingnodefound = 't'; continue; }
-			  else forwardedges[j] = currentnode->edges[j];
+			  else forwardedges[j] = currentnode->edge[j];
 			}
-			else forwardedges[j-1] = currentnode->edges[j];
+			else forwardedges[j-1] = currentnode->edge[j];
 		}
 
 	//RECURSION DOWN
@@ -589,6 +602,12 @@ void backwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 }
 
+void calculatemarginals()
+{
+//-----------------------Calculate marginals at all the nodes
+
+}
+
 void computefactormessage()
 {
 
@@ -603,9 +622,48 @@ void computevariablemessage()
 //----------------------------------- Linear Algebra Functions -------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-int length
-{
+double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
+{ //Sums rows of columns of a matrix represented as a vector
+  //Specify 'r' for sum rows or 'c' for sum columns
+  //Produces array
+  //Vector is assumed to be Row Major
+	
+	int i , j; //i is for row , j is for column corresponding to Matrix[i,j]
+	double* result;
 
+	//Allocate memory
+	if(specify == 'r') result = (double *)imalloc(E,nrow*sizeof(double));
+	else if(specify =='c') result = (double *)imalloc(E,ncol*sizeof(double));
+
+	if(specify == 'r') //if sum rows
+	{
+		i=0;
+		for(i;i<nrow;i++)
+		{		
+			result[i]=0;			
+			j=0;
+			for(j;j<ncol;j++)
+			{
+				result[i]=result[i]+matrix[i*ncol+j];	
+			}
+		}
+	}
+	
+	else if(specify =='c') //if sum columns
+	{
+		j=0;
+		for(j;j<ncol;j++)
+		{		
+			result[j]=0;			
+			i=0;
+			for(i;i<ncol;i++)
+			{
+				result[j]=result[j]+matrix[i*ncol+j];	
+			}
+		}
+	}
+	
+	return result;
 }
 
 
