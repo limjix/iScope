@@ -16,8 +16,7 @@ typedef struct hfactor
 	double observedvariable;
 
 //List of pointers to messages coming into node
-	double *messagesin; 
-	int nmessages;
-
+	mvec **messagesin; //List of pointers, hence void **
+	int nmessages; //How many messages
  
 } hfactor;

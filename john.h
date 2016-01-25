@@ -11,6 +11,7 @@
 #include "struct_hobj.h"
 #include "struct_xclient.h"
 #include "struct_hvec.h"
+#include "struct_mvec.h"
 #include "struct_hfactor.h"
 
 #include "func_callbackio.h"
