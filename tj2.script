@@ -1,0 +1,4 @@
+graph:hgph<=john.sumproductinit<=;
+graph:hgph<=john.setupproblem<=hgph:graph;
+<=john.sumproductalgorithm<=hgph:graph;
+

@@ -347,8 +347,6 @@ hfactor *create_hfactor()
 	return newhfac;
 }
 
-
-
 nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph)
 {	
 //--------------- Easy way to create nodes -------------------------
@@ -413,7 +411,6 @@ void *john_setupproblem(void *arglist)
 	fc = createnode(5,3,"fc",graph);
 	x4 = createnode(5,1,"y2",graph);
 
-
 	//Adds directed edge between mu and x
 	add_edge(x1,fa);
 	add_edge(fa,x2);
@@ -430,7 +427,6 @@ void *john_setupproblem(void *arglist)
 	add_hfactortondata(x3,create_hfactor());
 	add_hfactortondata(fc,create_hfactor());
 	add_hfactortondata(x4,create_hfactor());
-//	((hfactor *)x1->ndata)->test = 1;
 
 	//Populate Variable Payloads & specify type
 	((hfactor *)x1->ndata)->type = 'v';
@@ -444,20 +440,12 @@ void *john_setupproblem(void *arglist)
 
 	//Create probability distribution table
 	double *probdist1;
-	probdist1 =(double *)imalloc(E,12*sizeof(double));
+	probdist1 =(double *)imalloc(E,4*sizeof(double));
 
 	probdist1[0] = 1.0;
-	probdist1[1] = 0.5;
-	probdist1[2] = 0.9;
-	probdist1[3] = 0.4;
-	probdist1[4] = 0.2;
-	probdist1[5] = 3.0;
-	probdist1[6] = 2.3;
-	probdist1[7] = 9.0;
-	probdist1[8] = 0.7;
-	probdist1[9] = 0.1;
-	probdist1[10] = 1.2;
-	probdist1[11] = 1.7;
+	probdist1[1] = 0.1;
+	probdist1[2] = 0.1;
+	probdist1[3] = 1.0;
 
 	double *probdist2;
 	probdist2 =(double *)imalloc(E,4*sizeof(double));
@@ -475,7 +463,7 @@ void *john_setupproblem(void *arglist)
 	probdist3[2] = 1.0;
 	probdist3[3] = 0.1;
 
-	//Populate Factor Payloads
+	//Populate factor payloads with probability distribution
 	double *discretevalue = (double *)imalloc(E,2*sizeof(double));
 	discretevalue[0] = 0;
 	discretevalue[1] = 1;
@@ -504,7 +492,22 @@ void *john_setupproblem(void *arglist)
 	((hfactor *)fa->ndata)->nrow = 2;
 	((hfactor *)fa->ndata)->ncol = 2;
 
-	double* testingsum = SumRowsOrCols(probdist1,'c', 3, 4);
+	//Initialise lists for messages in
+	((hfactor *)x1->ndata)->messagesin = NULL;
+	((hfactor *)fa->ndata)->messagesin = NULL;
+	((hfactor *)x2->ndata)->messagesin = NULL;
+	((hfactor *)fb->ndata)->messagesin = NULL;
+	((hfactor *)x3->ndata)->messagesin = NULL;
+	((hfactor *)fc->ndata)->messagesin = NULL;
+	((hfactor *)x4->ndata)->messagesin = NULL;
+
+	((hfactor *)x1->ndata)->nmessages = 0;
+	((hfactor *)fa->ndata)->nmessages = 0;
+	((hfactor *)x2->ndata)->nmessages = 0;
+	((hfactor *)fb->ndata)->nmessages = 0;
+	((hfactor *)x3->ndata)->nmessages = 0;
+	((hfactor *)fc->ndata)->nmessages = 0;
+	((hfactor *)x4->ndata)->nmessages = 0;
 
 	//Output to arglist
 	arglist=NULL;
@@ -536,7 +539,7 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 //-----------------------Go down to leaf and come up
 
 	int nbranches = currentnode->nedges;
-	
+	double *message;
 	//When further down the tree, every edge except the calling edge is forward
 	int nforwardbranches = nbranches - 1;
 
@@ -548,13 +551,16 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 	nodes *nextnode;
 	
 	//----If at leaf go up-----
+	//----Leaf is the terminal nodes of the tree, as far as can go.
 	if(nforwardbranches==0)  
-	{	
-		*(((hfactor *)currentnode->ndata)->forwardtraverse)=1.0;		
+	{		
+		message = (double *)imalloc(E,1*sizeof(double));
+		*message = 1.0;	
+		addmessagetonode(message, callingnode);
 		return;
 	}
 	
-	//----If not at leaf, go down ----------
+	//----If not at leaf, go down & come up----------
 	else	              
 	{	
 	//Copy edge list & remove calling node from the list
@@ -581,15 +587,19 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 	//RETURNING FROM RECURSION
 
 	//What happens on this level before going up
+	//Results are appended to the calling node
 		if(type == 'v') //variable -- product of factor messages
 		{
-			
+			message = (double *)imalloc(E,1*sizeof(double));
+			addmessagetonode(message, callingnode);
 			return;			
 		}
 
 		else if(type == 'f') //factor --- sum marginals
 		{
-			
+			SumRowsOrCols(double *matrix,char specify, int nrow, int ncol);
+			message = (double *)imalloc(E,1*sizeof(double));
+			addmessagetonode(message, callingnode);
 			return;
 		}
 	}
@@ -608,14 +618,62 @@ void calculatemarginals()
 
 }
 
-void computefactormessage()
+//--------------------------------------------------------------------------------------------------
+//------------------------------ Supplementary Sum Product Functions -------------------------------
+//--------------------------------------------------------------------------------------------------
+
+double computefactormessage()
 {
+//-------------------Computes message that Factor Nodes send to Variable Nodes
+//----At Factor nodes, the probability distribution table is summed 
+//--Summed over the variable before the factor node on the way to the target node
+
+
+	SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
+}
+
+double computevariablemessage()
+{
+//-------------------Computes message that Variable Nodes send to Factor Nodes
+//----At Variable nodes, message out is product of messages in
+
+	productofmessagesin(nodes *targetnode)
 
 }
 
-void computevariablemessage()
+void *addmessagetonode(double *message, nodes *targetnode)
 {
+//-----------------------Adds message to targetnode->messagesin;
 
+//Finds current list & number of messages
+	hfactor* tnodehfac = (hfactor *)targetnode->ndata;
+	double *list = tnodehfac->messagesin;
+	int nmessages = tnodehfac->nmessages;
+
+//Copy to new list
+	double *newlist = (double *)imalloc(E,(nmessages+1)*sizeof(double));
+
+	if(nmessages ==0)
+	{
+		newlist[nmessages] = message;
+	}
+	else
+	{
+		int i = 0;
+		for int(i; i<nmessages, i++)
+		{
+			newlist[i] = list[i];
+		}
+
+		newlist[nmessages] = message;
+	}
+
+//Free previous list
+	tnodehfac->messagesin=ifree(E,(tnodehfac->messagesin);
+
+//Append newlist to targetnode
+	tnodehfac->nmessages++;
+	tnodehfac->messagesin=newlist;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -666,9 +724,43 @@ double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 	return result;
 }
 
+double dotproductoftwovectors(double* vecA, double* vecB)
+{
+//------------------Returns dot product of 2 vectors
 
+//Check to ensure the length of both vectors is the same
+	if(sizeof(vecA)=!sizeof(vecB)) return;
 
+	int length = sizeof(vecA)/sizeof(double);
+	double answer[length];
 
+	int i = 0;
+	for(i; i<length; i++)
+	{
+		answer[i] = vecA[i]*vecB[i];		
+	}
+
+	return answer;
+}
+
+double productofmessagesin(nodes *targetnode)
+{
+//------------------Returns the product of the messages into a target node
+	hfactor* tnodehfac = (hfactor *)targetnode->ndata;
+	double product;
+	double* messagelist=tnodehfac->messagesin;
+	int nmessages = tnodehfac->nmessages;
+	
+	if(nmessages == 0) return 0.0; //If no messages, then the product is 0
+
+	int i = 0;
+	for(i;i<nmessages;i++)
+	{
+		product = tnodehfac->messagesin[i]*product;
+	}	
+
+	return product;
+}
 
 
 
