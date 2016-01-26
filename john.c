@@ -502,7 +502,7 @@ void *john_setupproblem(void *arglist)
 	((hfactor *)fa->ndata)->ncol = 2;
 
 	//Create initialised vector for input messages
-	double *initmessage1 = (double *)imalloc(E,2*sizeof(double));
+	/*double *initmessage1 = (double *)imalloc(E,2*sizeof(double));
 	initmessage1[0]=1.0;
 	initmessage1[1]=2.0;
 
@@ -530,6 +530,7 @@ void *john_setupproblem(void *arglist)
 	message3->vector = initmessage3;
 	message4->length = 2;
 	message4->vector = initmessage4;
+	*/
 
 	//Initialise lists for messages in
 	((hfactor *)x1->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
@@ -549,10 +550,7 @@ void *john_setupproblem(void *arglist)
 	((hfactor *)x4->ndata)->nmessages = 0;
 
 	//Test
-	addmessagetonode(message1,x1);
-	addmessagetonode(message2,x1);
-	addmessagetonode(message3,x1);
-	addmessagetonode(message4,x1);
+
 
 	//Output to arglist
 	arglist=NULL;
@@ -572,9 +570,9 @@ void *john_sumproductalgorithm(void *arglist)
 
 	//Choose the root node
 	root = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
-	mvec *test = productofmessagesin(root);
+
 	//Call the recursion step
-//	forwardtraverse(root,root,graph);
+	forwardtraverse(root,root,graph);
 
 	return;
 }
@@ -584,7 +582,6 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 //-----------------------Go down to leaf and come up
 
 	int nbranches = currentnode->nedges;
-	double *message;
 
 	//When further down the tree, every edge except the calling edge is forward
 	int nforwardbranches = nbranches - 1;
@@ -593,7 +590,7 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 	if(currentnode==callingnode) nforwardbranches = nbranches;
 
 	char type = ((hfactor*)currentnode->ndata)->type;
-	unsigned forwardedges[nforwardbranches]; //list of edges to pursue
+	 
 	nodes *nextnode;
 	
 	//----If at leaf go up-----
@@ -607,11 +604,12 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 	else	              
 	{	
 	//Copy edge list & remove calling node from the list
+		unsigned *forwardedges = (unsigned *)imalloc(E,nforwardbranches*sizeof(unsigned)); //list of edges to pursue		
 		int j = 0;
 		char callingnodefound = 'f';
 		for( j; j<nbranches; j++)
 		{
-			if(callingnodefound ='f')
+			if(callingnodefound =='f')
 			{
 			  if(currentnode->edge[j]==callingnode->nhash) 
 			    { callingnodefound = 't'; continue; }
@@ -619,7 +617,8 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 			}
 			else forwardedges[j-1] = currentnode->edge[j];
 		}
-
+		((hfactor *)currentnode->ndata)->fedges = forwardedges; //Saves the list to the structure
+ 
 	//RECURSION DOWN
 		int i=0;
 		for(i; i<nforwardbranches; i++)
@@ -631,6 +630,7 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 	//What happens on this level before going up
 	//Results are appended to the calling node
+
 		if(type == 'v') //variable -- product of factor messages
 		{
 
