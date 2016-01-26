@@ -16,6 +16,12 @@ void *john_setupproblem(void *arglist);
 void *john_sumproductalgorithm(void *arglist);
 void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph);
 void backwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph);
-void computefactormessage();
-void computevariablemessage();
-double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
+void calculatemarginals();
+
+//Supplementary Sumproduct
+void addmessagetonode(mvec *messageptr, nodes *targetnode);
+
+//Linear Algebra Functions
+double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol);
+mvec *productofvectors(mvec* vecA, mvec* vecB);
+double *productofmessagesin(nodes *targetnode);

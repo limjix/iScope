@@ -502,16 +502,34 @@ void *john_setupproblem(void *arglist)
 	((hfactor *)fa->ndata)->ncol = 2;
 
 	//Create initialised vector for input messages
-	double *initmessage = (double *)imalloc(E,2*sizeof(double));
-	initmessage[0]=1;
-	initmessage[1]=2;
+	double *initmessage1 = (double *)imalloc(E,2*sizeof(double));
+	initmessage1[0]=1.0;
+	initmessage1[1]=2.0;
+
+	double *initmessage2 = (double *)imalloc(E,2*sizeof(double));
+	initmessage2[0]=3.0;
+	initmessage2[1]=4.0;
+
+	double *initmessage3 = (double *)imalloc(E,2*sizeof(double));
+	initmessage3[0]=5.0;
+	initmessage3[1]=6.0;
+	
+	double *initmessage4 = (double *)imalloc(E,2*sizeof(double));
+	initmessage4[0]=10.0;
+	initmessage4[1]=10.0;
 
 	mvec *message1 = (mvec *)imalloc(E,1*sizeof(mvec));
 	mvec *message2 = (mvec *)imalloc(E,1*sizeof(mvec));
+	mvec *message3 = (mvec *)imalloc(E,1*sizeof(mvec));
+	mvec *message4 = (mvec *)imalloc(E,1*sizeof(mvec));
 	message1->length = 2;
-	message1->vector = initmessage;
+	message1->vector = initmessage1;
 	message2->length = 2;
-	message2->vector = initmessage;
+	message2->vector = initmessage2;
+	message3->length = 2;
+	message3->vector = initmessage3;
+	message4->length = 2;
+	message4->vector = initmessage4;
 
 	//Initialise lists for messages in
 	((hfactor *)x1->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
@@ -532,10 +550,9 @@ void *john_setupproblem(void *arglist)
 
 	//Test
 	addmessagetonode(message1,x1);
-	addmessagetonode(message1,x1);
-	addmessagetonode(message1,x1);
-
-	mvec *test = productofmessagesin(x1);
+	addmessagetonode(message2,x1);
+	addmessagetonode(message3,x1);
+	addmessagetonode(message4,x1);
 
 	//Output to arglist
 	arglist=NULL;
@@ -548,14 +565,14 @@ void *john_sumproductalgorithm(void *arglist)
 {
 	void *argptr;
 	hgph *graph;
-	nodes *root, *test;
+	nodes *root;
 	//Get previous hgph struct
 	if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
 
 	//Choose the root node
 	root = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
-
+	mvec *test = productofmessagesin(root);
 	//Call the recursion step
 //	forwardtraverse(root,root,graph);
 
@@ -673,11 +690,11 @@ void addmessagetonode(mvec *messageptr, nodes *targetnode)
 	}
 
 	//Free previous list
-	tnodehfac->messagesin=ifree(E,tnodehfac->messagesin);
+	//tnodehfac->messagesin=ifree(E,tnodehfac->messagesin);
 
 	//Append newlist to targetnode
-	tnodehfac->nmessages++;
 	tnodehfac->messagesin=newlist;
+	tnodehfac->nmessages++;
 
 	return;
 }
@@ -737,9 +754,8 @@ mvec *productofmessagesin(nodes *targetnode)
 	hfactor* tnodehfac = (hfactor *)targetnode->ndata;
 	mvec** list = tnodehfac->messagesin;
 	int nmessages = tnodehfac->nmessages;
-
-	mvec *product;
-	double *vector;
+	int length;
+	mvec *product = (mvec *)imalloc(E,1*sizeof(mvec));;
 
 	if(nmessages == 0) //If there are no messages in that node, a scalar of 1 is produced
 	{
@@ -747,18 +763,33 @@ mvec *productofmessagesin(nodes *targetnode)
 		product->vector = (double *)imalloc(E,1*sizeof(double));	
 		product->vector[0] = 1;
 	}
-
 	else if(nmessages == 1) //If there is 1 message, it is just the same vector
 	{
-		product->length = (tnodehfac->messagesin[0])->length;
-		product->vector = (tnodehfac->messagesin[0])->vector;
+		product->length = tnodehfac->messagesin[0]->length;
+		product->vector = tnodehfac->messagesin[0]->vector;
 	}
-
 	else //If there are multiple messages, product one by one
 	{	
-		//Need to initialise a unity vector
-		product->length = (tnodehfac->messagesin[0])->length;
+		length = list[0]->length;
+		double vect[length];	
+		int j;
+		int i = 0; // Goes according to length of the vector
+		for(i;i<length;i++)
+		{			
+			j = 0;
+			vect[i] = 1;			
+			for(j; j<nmessages; j++) //Goes according to how many vectors
+			{
+				vect[i] = vect[i]*list[j]->vector[i];
+			}
+			
+		}
+		product->length = length;
+		product->vector = vect;
 		
+	/*	//Need to initialise a unity vector
+		product->length = (tnodehfac->messagesin[0])->length;
+
 		int i = 0;
 		for(i;i<product->length;i++) //fill the unity vector with 1
 		{
@@ -769,8 +800,9 @@ mvec *productofmessagesin(nodes *targetnode)
 		i = 0;
 		for(i; i< nmessages-1; i++) //If I had n vectors, I need to product them n-1 times
 		{
-			product = productofvectors(tnodehfac->messagesin[i], product);
+			product = productofvectors(list[i], product);
 		}
+	*/
 	}
 
 	return product;
@@ -782,18 +814,20 @@ mvec *productofvectors(mvec *vecA, mvec *vecB)
 //------------------Works using the mvec container
 
 	//Check to ensure the length of both vectors is the same
-	if(vecA->length != vecB->length) return;
+	if(vecA->length != vecB->length) return NULL;
 
 	int length = vecA->length;
 	mvec *answer;
+	double vec[length];
 	answer->length = vecA->length;
 
 	int i = 0;
 	for(i; i<length; i++)
 	{
-		answer->vector[i] = vecA->vector[i] * vecB->vector[i];		
+		vec[i] = vecA->vector[i] * vecB->vector[i];		
 	}
-
+	
+	answer->vector = vec;
 	return answer;
 }
 
