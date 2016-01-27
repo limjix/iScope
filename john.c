@@ -667,17 +667,19 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 		else if(type == 'f') //factor --- sum marginals
 		{
-			mvec *message = (mvec *)imalloc(E,1*sizeof(mvec)); //Allocate memory for message
-			if(((hfactor*)nextnode->ndata)->observed == 'f')
+
+			if(((hfactor*)nextnode->ndata)->observed == 'f') //If the previous node was unobserved
 			{
-				message = SumRowsOrCols(((hfactor *)currentnode->ndata)->probdist,'r', 
+				mvec *message = SumRowsOrCols(((hfactor *)currentnode->ndata)->probdist,'r', 
 					((hfactor *)currentnode->ndata)->nrow, ((hfactor *)currentnode->ndata)->ncol);
 								
 				addmessagetonode(message,callingnode);
 			}
-			else
+			else //If the previous node was observed - take only the associated row or column
 			{
-				
+				mvec *message;
+				message = sumobservednode(currentnode, nextnode);
+				addmessagetonode(message,callingnode);
 			}
 			return;
 		}
@@ -753,7 +755,7 @@ mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 	//Allocate memory
 	if(specify == 'r') result = (double *)imalloc(E,nrow*sizeof(double));
 	else if(specify =='c') result = (double *)imalloc(E,ncol*sizeof(double));
-	mvec *message = (mvec *)imalloc(E,1*sizeof(mvec))
+	mvec *message = (mvec *)imalloc(E,1*sizeof(mvec));
 
 	if(specify == 'r') //if sum rows
 	{
@@ -791,6 +793,62 @@ mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 	return message;
 }
 
+mvec *sumobservednode(nodes *factornode, nodes *observednode)
+{
+	hfactor* fnhfac = (hfactor *)factornode->ndata;
+	hfactor* onhfac = (hfactor *)observednode->ndata;
+	int length;
+
+	mvec *answer = 	(mvec *)imalloc(E,1*sizeof(mvec));
+	int n=0;
+
+	//Determine if the observed value is column or row	
+	if( fnhfac->columnlabel == (hfactor *)onhfac->ndata ) //if observed value is in column, vector is column but with length of nrow
+	{
+		length = fnhfac->nrow;
+
+		//Which column to take?
+		while( n < (fnhfac->ncol) )
+		{		
+			if( fnhfac->columndiscretevalues[n] == onhfac->observedvariable ) break;
+			n++;
+		}
+
+		double *vect =  (double *)imalloc(E,length*sizeof(double));
+
+		//Take said column
+		int i = 0;
+		for(i; i<length; i++)
+		{
+			vect[i] = fnhfac->probdist[i*ncol+n];
+		}
+	}
+
+	else //If observed value is in row, the vector is row but with length of ncol
+	{
+		length = fnhfac->ncol;
+	
+		//Which row to take?
+		while( n < (fnhfac->ncol) )
+		{		
+			if( fnhfac->rowdiscretevalues[n] == onhfac->observedvariable ) break;
+			n++;
+		}
+
+		double *vect =  (double *)imalloc(E,length*sizeof(double));	
+
+		//Take said row	
+		int i = 0;	
+		for(i; i<length; i++)
+		{
+			vect[i] = fnhfac->probdist[n*ncol+i];
+		}
+	}
+
+	answer->length = length;
+	answer->vector = vect;
+	return answer;
+}
 
 mvec *productofmessagesin(nodes *targetnode)
 {

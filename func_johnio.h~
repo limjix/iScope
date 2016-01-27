@@ -22,6 +22,6 @@ void calculatemarginals();
 void addmessagetonode(mvec *messageptr, nodes *targetnode);
 
 //Linear Algebra Functions
-double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol);
+mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol);
 mvec *productofvectors(mvec* vecA, mvec* vecB);
 mvec *productofmessagesin(nodes *targetnode);
