@@ -24,4 +24,4 @@ void addmessagetonode(mvec *messageptr, nodes *targetnode);
 //Linear Algebra Functions
 double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol);
 mvec *productofvectors(mvec* vecA, mvec* vecB);
-double *productofmessagesin(nodes *targetnode);
+mvec *productofmessagesin(nodes *targetnode);

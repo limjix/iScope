@@ -490,16 +490,16 @@ void *john_setupproblem(void *arglist)
 	((hfactor *)fb->ndata)->rowdiscretevalues = discretevalue;
 	((hfactor *)fb->ndata)->columnlabel = str_hash("x2");
 	((hfactor *)fb->ndata)->rowlabel = str_hash("x3");
-	((hfactor *)fa->ndata)->nrow = 2;
-	((hfactor *)fa->ndata)->ncol = 2;
+	((hfactor *)fb->ndata)->nrow = 2;
+	((hfactor *)fb->ndata)->ncol = 2;
 
 	((hfactor *)fc->ndata)->probdist = probdist1;
 	((hfactor *)fc->ndata)->columndiscretevalues = discretevalue;
 	((hfactor *)fc->ndata)->rowdiscretevalues = discretevalue;
 	((hfactor *)fc->ndata)->columnlabel = str_hash("x2");
 	((hfactor *)fc->ndata)->rowlabel = str_hash("x4");
-	((hfactor *)fa->ndata)->nrow = 2;
-	((hfactor *)fa->ndata)->ncol = 2;
+	((hfactor *)fc->ndata)->nrow = 2;
+	((hfactor *)fc->ndata)->ncol = 2;
 
 	//Create initialised vector for input messages
 	/*double *initmessage1 = (double *)imalloc(E,2*sizeof(double));
@@ -531,6 +531,9 @@ void *john_setupproblem(void *arglist)
 	message4->length = 2;
 	message4->vector = initmessage4;
 	*/
+
+	//Observed variable nodes
+	
 
 	//Initialise lists for messages in
 	((hfactor *)x1->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
@@ -597,6 +600,30 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 	//----Leaf is the terminal nodes of the tree, as far as can go.
 	if(nforwardbranches==0)  
 	{		
+		mvec *message = (mvec *)imalloc(E,1*sizeof(mvec)); //Allocate memory for message
+		
+		//Determine length of message vector	
+		int msgveclength;
+		
+		if(((hfactor *)callingnode->ndata)->columnlabel == currentnode->nhash) //If prob dist column is for the current node,
+		{
+			msgveclength = ((hfactor *)callingnode->ndata)->nrow;
+		}
+		else
+		{
+			msgveclength = ((hfactor *)callingnode->ndata)->ncol;
+		}
+
+		//Allocate memory for vector and initialise value to 1 as per theory
+		double *msgvec = (double *)imalloc(E,msgveclength*sizeof(double));
+		int i = 0;
+		for(i;i<msgveclength;i++)
+		{
+			msgvec[i] = 1;
+		}		
+		message->vector = msgvec;
+		message->length = msgveclength;
+		addmessagetonode(message, callingnode); //Attach full message to callingnode
 		return;
 	}
 	
@@ -633,13 +660,25 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 		if(type == 'v') //variable -- product of factor messages
 		{
-
+			mvec *message = productofmessagesin(currentnode); //Products all the factor messages
+			addmessagetonode(message, callingnode);
 			return;			
 		}
 
 		else if(type == 'f') //factor --- sum marginals
 		{
-
+			mvec *message = (mvec *)imalloc(E,1*sizeof(mvec)); //Allocate memory for message
+			if(((hfactor*)nextnode->ndata)->observed == 'f')
+			{
+				message = SumRowsOrCols(((hfactor *)currentnode->ndata)->probdist,'r', 
+					((hfactor *)currentnode->ndata)->nrow, ((hfactor *)currentnode->ndata)->ncol);
+								
+				addmessagetonode(message,callingnode);
+			}
+			else
+			{
+				
+			}
 			return;
 		}
 	}
@@ -690,7 +729,7 @@ void addmessagetonode(mvec *messageptr, nodes *targetnode)
 	}
 
 	//Free previous list
-	//tnodehfac->messagesin=ifree(E,tnodehfac->messagesin);
+	tnodehfac->messagesin=ifree(E,tnodehfac->messagesin);
 
 	//Append newlist to targetnode
 	tnodehfac->messagesin=newlist;
@@ -702,7 +741,7 @@ void addmessagetonode(mvec *messageptr, nodes *targetnode)
 //----------------------------------- Linear Algebra Functions -------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
+mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 { //Sums rows of columns of a matrix represented as a vector
   //Specify 'r' for sum rows or 'c' for sum columns
   //Produces array
@@ -714,6 +753,7 @@ double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 	//Allocate memory
 	if(specify == 'r') result = (double *)imalloc(E,nrow*sizeof(double));
 	else if(specify =='c') result = (double *)imalloc(E,ncol*sizeof(double));
+	mvec *message = (mvec *)imalloc(E,1*sizeof(mvec))
 
 	if(specify == 'r') //if sum rows
 	{
@@ -727,6 +767,8 @@ double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 				result[i]=result[i]+matrix[i*ncol+j];	
 			}
 		}
+
+	message->length = nrow;
 	}
 	
 	else if(specify =='c') //if sum columns
@@ -741,9 +783,12 @@ double *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 				result[j]=result[j]+matrix[i*ncol+j];	
 			}
 		}
+		message->length = ncol;
 	}
 	
-	return result;
+	message->vector = result;
+
+	return message;
 }
 
 
