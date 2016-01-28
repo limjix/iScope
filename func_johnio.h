@@ -20,9 +20,10 @@ void calculatemarginals();
 
 //Supplementary Sumproduct
 void addmessagetonode(mvec *messageptr, nodes *targetnode);
+void writeresultstofile(hgph *graph);
 
 //Linear Algebra Functions
-mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol);
+mvec *SumRowsOrCols(nodes *factornode, nodes *previousnode);
 mvec *sumobservednode(nodes *factornode, nodes *observednode);
 mvec *productofvectors(mvec* vecA, mvec* vecB);
 mvec *productofmessagesin(nodes *targetnode);

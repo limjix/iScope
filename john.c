@@ -409,7 +409,7 @@ void *john_setupproblem(void *arglist)
 	fb = createnode(7,5,"fb",graph);
 	x3 = createnode(9,5,"x3",graph);
 	fc = createnode(5,3,"fc",graph);
-	x4 = createnode(5,1,"y2",graph);
+	x4 = createnode(5,1,"x4",graph);
 
 	//Adds directed edge between mu and x
 	add_edge(x1,fa);
@@ -467,10 +467,24 @@ void *john_setupproblem(void *arglist)
 	double *probdist3;
 	probdist3 =(double *)imalloc(E,4*sizeof(double));
 
-	probdist3[0] = 0.1;
+	probdist3[0] = 0.1; 
 	probdist3[1] = 1.0;
 	probdist3[2] = 1.0;
 	probdist3[3] = 0.1;
+
+/*	probdist3[0] = 1.0;	
+	probdist3[1] = 0.1;
+	probdist3[2] = 0.4;
+	probdist3[3] = 0.5;
+	probdist3[4] = 1.0;
+	probdist3[5] = 0.1;
+	probdist3[6] = 0.9;
+	probdist3[7] = 0.3;
+	probdist3[8] = 0.2;
+	probdist3[9] = 0.1;
+	probdist3[10] = 0.3;
+	probdist3[11] = 0.1;
+*/
 
 	//Populate factor payloads with probability distribution
 	double *discretevalue = (double *)imalloc(E,2*sizeof(double));
@@ -533,16 +547,19 @@ void *john_setupproblem(void *arglist)
 	*/
 
 	//Observed variable nodes
-	
+	((hfactor *)x1->ndata)->observed = 'f';
+	((hfactor *)x2->ndata)->observed = 'f';
+	((hfactor *)x3->ndata)->observed = 'f';
+	((hfactor *)x4->ndata)->observed = 'f';
 
 	//Initialise lists for messages in
-	((hfactor *)x1->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
-	((hfactor *)fa->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
-	((hfactor *)x2->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
-	((hfactor *)fb->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
-	((hfactor *)x3->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
-	((hfactor *)fc->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
-	((hfactor *)x4->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec));
+	((hfactor *)x1->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
+	((hfactor *)fa->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
+	((hfactor *)x2->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
+	((hfactor *)fb->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
+	((hfactor *)x3->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
+	((hfactor *)fc->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
+	((hfactor *)x4->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
 	
 	((hfactor *)x1->ndata)->nmessages = 0;
 	((hfactor *)fa->ndata)->nmessages = 0;
@@ -553,8 +570,24 @@ void *john_setupproblem(void *arglist)
 	((hfactor *)x4->ndata)->nmessages = 0;
 
 	//Test
+/*	double *testx2val = (double *)imalloc(E,4*sizeof(double));
+	double *testx3val = (double *)imalloc(E,3*sizeof(double));
+	testx2val[0] = 1;
+	testx2val[1] = 2;
+	testx2val[2] = 3;
+	testx2val[3] = 4;
 
+	testx3val[0] = 1;
+	testx3val[1] = 2;
+	testx3val[2] = 3;
 
+	((hfactor *)fb->ndata)->columndiscretevalues = testx2val;
+	((hfactor *)fb->ndata)->rowdiscretevalues = testx3val;	
+	((hfactor *)x2->ndata)->observed = 't';
+	((hfactor *)x2->ndata)->observedvariable = 2;
+
+	mvec *test= sumobservednode(fb, x2);
+*/
 	//Output to arglist
 	arglist=NULL;
 	dynamic_putarg("graph.hgph","hgph",(void *)graph,SZ,&arglist);
@@ -572,12 +605,35 @@ void *john_sumproductalgorithm(void *arglist)
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
 
 	//Choose the root node
-	root = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
+	root = find_node(str_hash("x2"),graph->nnodes,graph->nodelist);
 
 	//Call the recursion step
 	forwardtraverse(root,root,graph);
 
-	return;
+	//Test
+	nodes *x1 = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
+	nodes *x2 = find_node(str_hash("x2"),graph->nnodes,graph->nodelist);
+	nodes *x3 = find_node(str_hash("x3"),graph->nnodes,graph->nodelist);
+	nodes *x4 = find_node(str_hash("x4"),graph->nnodes,graph->nodelist);
+	nodes *fa = find_node(str_hash("fa"),graph->nnodes,graph->nodelist);
+	nodes *fb = find_node(str_hash("fb"),graph->nnodes,graph->nodelist);
+	nodes *fc = find_node(str_hash("fc"),graph->nnodes,graph->nodelist);
+
+	hfactor *hx1 = (hfactor*)x1->ndata;
+	hfactor *hx2 = (hfactor*)x2->ndata;
+	hfactor *hx3 = (hfactor*)x3->ndata;
+	hfactor *hx4 = (hfactor*)x4->ndata;
+	hfactor *hfa = (hfactor*)fa->ndata;
+	hfactor *hfb = (hfactor*)fb->ndata;
+	hfactor *hfc = (hfactor*)fc->ndata;
+
+	writeresultstofile(graph);
+	
+	//Return arglist
+	arglist=NULL;
+	dynamic_putarg("graph.hgph","hgph",(void *)graph,SZ,&arglist);
+
+	return arglist;
 }
 
 void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
@@ -657,6 +713,7 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 	//What happens on this level before going up
 	//Results are appended to the calling node
+		if(currentnode==callingnode) return; //If this is the root node, forward traverse ends		
 
 		if(type == 'v') //variable -- product of factor messages
 		{
@@ -670,15 +727,12 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 			if(((hfactor*)nextnode->ndata)->observed == 'f') //If the previous node was unobserved
 			{
-				mvec *message = SumRowsOrCols(((hfactor *)currentnode->ndata)->probdist,'r', 
-					((hfactor *)currentnode->ndata)->nrow, ((hfactor *)currentnode->ndata)->ncol);
-								
+				mvec *message = SumRowsOrCols(currentnode, nextnode);		
 				addmessagetonode(message,callingnode);
 			}
 			else //If the previous node was observed - take only the associated row or column
 			{
-				mvec *message;
-				message = sumobservednode(currentnode, nextnode);
+				mvec *message = sumobservednode(currentnode, nextnode);
 				addmessagetonode(message,callingnode);
 			}
 			return;
@@ -713,7 +767,7 @@ void addmessagetonode(mvec *messageptr, nodes *targetnode)
 	int nmessages = tnodehfac->nmessages;
 	
 	//Copy to new list
-	mvec **newlist = (mvec **)imalloc(E,(nmessages+1)*sizeof(mvec));
+	mvec **newlist = (mvec **)imalloc(E,(nmessages+1)*sizeof(mvec*));
 
 	if(nmessages ==0) //If no messages, just add to the list
 	{
@@ -739,11 +793,53 @@ void addmessagetonode(mvec *messageptr, nodes *targetnode)
 
 	return;
 }
+
+void writeresultstofile(hgph *graph)
+{
+//--------------------Write results to file for debugging purposes---------------------------------
+	int nnodes = graph->nnodes;	
+	FILE *fpointer;
+	fpointer = fopen("SumProductResults.txt","w");
+
+	nodes *node;
+	hfactor *hfac;
+	mvec *vec;	
+
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	for(i;i<nnodes;i++) //For each node
+	{
+		node = graph->nodelist[i];
+		hfac = (hfactor*)node->ndata;
+				
+
+		fprintf(fpointer, "Node: %d\n", node->nhash); 
+		fprintf(fpointer, "Nmessages: %d\n", hfac->nmessages);
+
+		for(j=0;j<hfac->nmessages;j++) //For each message
+		{		
+			vec = hfac->messagesin[j];			
+			fprintf(fpointer, "Message #%d \n", j);
+			
+			for(k=0;k<vec->length;k++) //For each vector element
+			{
+				fprintf(fpointer, "%f \t", vec->vector[k]);
+			}
+			fprintf(fpointer, "\n");
+		}
+		fprintf(fpointer, "\n");
+	}
+
+	fclose(fpointer);
+
+	return;
+}
 //--------------------------------------------------------------------------------------------------
 //----------------------------------- Linear Algebra Functions -------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
+mvec *SumRowsOrCols(nodes *factornode, nodes *previousnode)
 { //Sums rows of columns of a matrix represented as a vector
   //Specify 'r' for sum rows or 'c' for sum columns
   //Produces array
@@ -751,14 +847,18 @@ mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 	
 	int i , j; //i is for row , j is for column corresponding to Matrix[i,j]
 	double* result;
-
-	//Allocate memory
-	if(specify == 'r') result = (double *)imalloc(E,nrow*sizeof(double));
-	else if(specify =='c') result = (double *)imalloc(E,ncol*sizeof(double));
+	hfactor* fnhfac = (hfactor *)factornode->ndata;
+	hfactor* pnhfac = (hfactor *)previousnode->ndata;
 	mvec *message = (mvec *)imalloc(E,1*sizeof(mvec));
+	int nrow = fnhfac->nrow;
+	int ncol = fnhfac->ncol;
+	double *matrix = fnhfac->probdist;
 
-	if(specify == 'r') //if sum rows
+	//Determine if row or column needs to be summed out
+	if( fnhfac->columnlabel == previousnode->nhash ) //if previous node is in column, vector is column but with length of nrow
 	{
+		result = (double *)imalloc(E,nrow*sizeof(double));
+
 		i=0;
 		for(i;i<nrow;i++)
 		{		
@@ -769,12 +869,12 @@ mvec *SumRowsOrCols(double *matrix,char specify, int nrow, int ncol)
 				result[i]=result[i]+matrix[i*ncol+j];	
 			}
 		}
-
-	message->length = nrow;
+		message->length = nrow;
 	}
-	
-	else if(specify =='c') //if sum columns
+	else  //if previous node is in row, the vector is row but with length of column
 	{
+		result = (double *)imalloc(E,ncol*sizeof(double));
+
 		j=0;
 		for(j;j<ncol;j++)
 		{		
@@ -798,12 +898,12 @@ mvec *sumobservednode(nodes *factornode, nodes *observednode)
 	hfactor* fnhfac = (hfactor *)factornode->ndata;
 	hfactor* onhfac = (hfactor *)observednode->ndata;
 	int length;
-
+	double *vect;
 	mvec *answer = 	(mvec *)imalloc(E,1*sizeof(mvec));
 	int n=0;
 
 	//Determine if the observed value is column or row	
-	if( fnhfac->columnlabel == (hfactor *)onhfac->ndata ) //if observed value is in column, vector is column but with length of nrow
+	if( fnhfac->columnlabel == observednode->nhash ) //if observed value is in column, vector is column but with length of nrow
 	{
 		length = fnhfac->nrow;
 
@@ -814,13 +914,13 @@ mvec *sumobservednode(nodes *factornode, nodes *observednode)
 			n++;
 		}
 
-		double *vect =  (double *)imalloc(E,length*sizeof(double));
+		vect =  (double *)imalloc(E,length*sizeof(double));
 
 		//Take said column
 		int i = 0;
 		for(i; i<length; i++)
 		{
-			vect[i] = fnhfac->probdist[i*ncol+n];
+			vect[i] = fnhfac->probdist[i*(fnhfac->ncol)+n];
 		}
 	}
 
@@ -835,13 +935,13 @@ mvec *sumobservednode(nodes *factornode, nodes *observednode)
 			n++;
 		}
 
-		double *vect =  (double *)imalloc(E,length*sizeof(double));	
+		vect =  (double *)imalloc(E,length*sizeof(double));	
 
 		//Take said row	
 		int i = 0;	
 		for(i; i<length; i++)
 		{
-			vect[i] = fnhfac->probdist[n*ncol+i];
+			vect[i] = fnhfac->probdist[n*(fnhfac->ncol)+i];
 		}
 	}
 
