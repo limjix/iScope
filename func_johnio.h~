@@ -8,7 +8,7 @@ void *john_nodeplot(void *arglist);
 void add_hfactortondata(nodes *curr,hfactor *hfac);
 hfactor *create_hfactor();
 void *john_testfunc(void *arglist);
-nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph);
+nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph, char type);
 
 //Sumproduct
 void *john_sumproductinit(void *arglist);
@@ -20,6 +20,7 @@ void calculatemarginals();
 
 //Supplementary Sumproduct
 void addmessagetonode(mvec *messageptr, nodes *targetnode);
+void writeresultstofile(hgph *graph);
 
 //Linear Algebra Functions
 mvec *SumRowsOrCols(nodes *factornode, nodes *previousnode);

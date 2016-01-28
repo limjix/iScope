@@ -347,19 +347,39 @@ hfactor *create_hfactor()
 	return newhfac;
 }
 
-nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph)
+nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph, char type)
 {	
 //--------------- Easy way to create nodes -------------------------
 
 	double pos[2];
 	nodes *node;
 	if(invalidptr(E,graph)) return NULL;
-
+	
+	//Create the node
 	pos[0]=x;     //x
   	pos[1]=y;     //y
 	add_node(str_hash(str),pos,&(graph->nnodes),&(graph->nodelist));
 	node=find_node(str_hash(str),graph->nnodes,graph->nodelist);
 	
+	//Create hfactor & append
+	hfactor *newhfac;
+	newhfac =(hfactor *)imalloc(E,sizeof(hfactor));
+	if(invalidptr(E,newhfac)) return;
+
+	node->ndata = newhfac;	
+	
+	//Specify type
+	((hfactor *)node->ndata)->type = type;
+
+	//Initialised Observed to false
+	((hfactor *)node->ndata)->observed = 'f';
+
+	//Initialise nmessages to zero
+	((hfactor *)node->ndata)->nmessages = 0;
+
+	//Allocate memory for mvec and append
+	((hfactor *)node->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
+
 	return node;
 }
 
@@ -403,13 +423,13 @@ void *john_setupproblem(void *arglist)
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
 
 	//Sets up nodes in their places
-	x1 = createnode(1,5,"x1",graph);
-	fa = createnode(3,5,"fa",graph);
-	x2 = createnode(5,5,"x2",graph);
-	fb = createnode(7,5,"fb",graph);
-	x3 = createnode(9,5,"x3",graph);
-	fc = createnode(5,3,"fc",graph);
-	x4 = createnode(5,1,"x4",graph);
+	x1 = createnode(1,5,"x1",graph,'v');
+	fa = createnode(3,5,"fa",graph,'f');
+	x2 = createnode(5,5,"x2",graph,'v');
+	fb = createnode(7,5,"fb",graph,'f');
+	x3 = createnode(9,5,"x3",graph,'v');
+	fc = createnode(5,3,"fc",graph,'f');
+	x4 = createnode(5,1,"x4",graph,'v');
 
 	//Adds directed edge between mu and x
 	add_edge(x1,fa);
@@ -418,25 +438,6 @@ void *john_setupproblem(void *arglist)
 	add_edge(fb,x3);
 	add_edge(x4,fc);
 	add_edge(fc,x2);
-
-	//Adds hfactor to ndata
-	add_hfactortondata(x1,create_hfactor());
-	add_hfactortondata(fa,create_hfactor());
-	add_hfactortondata(x2,create_hfactor());
-	add_hfactortondata(fb,create_hfactor());
-	add_hfactortondata(x3,create_hfactor());
-	add_hfactortondata(fc,create_hfactor());
-	add_hfactortondata(x4,create_hfactor());
-
-	//Populate Variable Payloads & specify type
-	((hfactor *)x1->ndata)->type = 'v';
-	((hfactor *)x2->ndata)->type = 'v';
-	((hfactor *)x3->ndata)->type = 'v';
-	((hfactor *)x4->ndata)->type = 'v';
-
-	((hfactor *)fa->ndata)->type = 'f';
-	((hfactor *)fb->ndata)->type = 'f';
-	((hfactor *)fc->ndata)->type = 'f';
 
 	//Create probability distribution table
 	/*Row Major Ordering
@@ -448,64 +449,76 @@ void *john_setupproblem(void *arglist)
 	{11 12 13 21 22 23 31 32 33}
 	*/
 
-	double *probdist1;
+	double *probdist1; //fc
 	probdist1 =(double *)imalloc(E,4*sizeof(double));
 
-	probdist1[0] = 1.0;
-	probdist1[1] = 0.1;
-	probdist1[2] = 0.1;
-	probdist1[3] = 1.0;
+//	probdist1[0] = 1.0;
+//	probdist1[1] = 0.1;
+//	probdist1[2] = 0.1;
+//	probdist1[3] = 1.0;
 
-	double *probdist2;
+
+	probdist1[0] = 0.3;
+	probdist1[1] = 0.4;
+	probdist1[2] = 0.3;
+	probdist1[3] = 0.0;
+
+	double *probdist2; //fa
 	probdist2 =(double *)imalloc(E,4*sizeof(double));
 
-	probdist2[0] = 1.0;
-	probdist2[1] = 0.9;
-	probdist2[2] = 0.9;
-	probdist2[3] = 1.0;
+//	probdist2[0] = 1.0;
+//	probdist2[1] = 0.9;
+//	probdist2[2] = 0.9;
+//	probdist2[3] = 1.0;
 
-	double *probdist3;
+
+	probdist2[0] = 0.5;
+	probdist2[1] = 0.2;
+	probdist2[2] = 0.1;
+	probdist2[3] = 0.3;
+	probdist2[4] = 0.5;
+	probdist2[5] = 0.2;
+
+	double *probdist3; //fb
 	probdist3 =(double *)imalloc(E,4*sizeof(double));
 
-	probdist3[0] = 0.1; 
-	probdist3[1] = 1.0;
-	probdist3[2] = 1.0;
-	probdist3[3] = 0.1;
+//	probdist3[0] = 0.1; 
+//	probdist3[1] = 1.0;
+//	probdist3[2] = 1.0;
+//	probdist3[3] = 0.1;
 
-/*	probdist3[0] = 1.0;	
-	probdist3[1] = 0.1;
-	probdist3[2] = 0.4;
-	probdist3[3] = 0.5;
-	probdist3[4] = 1.0;
-	probdist3[5] = 0.1;
-	probdist3[6] = 0.9;
-	probdist3[7] = 0.3;
-	probdist3[8] = 0.2;
-	probdist3[9] = 0.1;
-	probdist3[10] = 0.3;
-	probdist3[11] = 0.1;
-*/
+	probdist3[0] = 0.7; 
+	probdist3[1] = 0.2;
+	probdist3[2] = 0.3;
+	probdist3[3] = 0.1;
+	probdist3[4] = 0.3;
+	probdist3[5] = 0.5;
 
 	//Populate factor payloads with probability distribution
 	double *discretevalue = (double *)imalloc(E,2*sizeof(double));
 	discretevalue[0] = 0;
 	discretevalue[1] = 1;
 
+	double *discretevalue2 = (double *)imalloc(E,3*sizeof(double));
+	discretevalue[0] = 0;
+	discretevalue[1] = 1;
+	discretevalue[2] = 2;
+
 	((hfactor *)fa->ndata)->probdist = probdist2;
-	((hfactor *)fa->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fa->ndata)->columndiscretevalues = discretevalue2;
 	((hfactor *)fa->ndata)->rowdiscretevalues = discretevalue;
 	((hfactor *)fa->ndata)->columnlabel = str_hash("x1");
 	((hfactor *)fa->ndata)->rowlabel = str_hash("x2");
 	((hfactor *)fa->ndata)->nrow = 2;
-	((hfactor *)fa->ndata)->ncol = 2;
+	((hfactor *)fa->ndata)->ncol = 3;
 
 	((hfactor *)fb->ndata)->probdist = probdist3;
-	((hfactor *)fb->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fb->ndata)->columndiscretevalues = discretevalue2;
 	((hfactor *)fb->ndata)->rowdiscretevalues = discretevalue;
 	((hfactor *)fb->ndata)->columnlabel = str_hash("x2");
 	((hfactor *)fb->ndata)->rowlabel = str_hash("x3");
 	((hfactor *)fb->ndata)->nrow = 2;
-	((hfactor *)fb->ndata)->ncol = 2;
+	((hfactor *)fb->ndata)->ncol = 3;
 
 	((hfactor *)fc->ndata)->probdist = probdist1;
 	((hfactor *)fc->ndata)->columndiscretevalues = discretevalue;
@@ -515,79 +528,6 @@ void *john_setupproblem(void *arglist)
 	((hfactor *)fc->ndata)->nrow = 2;
 	((hfactor *)fc->ndata)->ncol = 2;
 
-	//Create initialised vector for input messages
-	/*double *initmessage1 = (double *)imalloc(E,2*sizeof(double));
-	initmessage1[0]=1.0;
-	initmessage1[1]=2.0;
-
-	double *initmessage2 = (double *)imalloc(E,2*sizeof(double));
-	initmessage2[0]=3.0;
-	initmessage2[1]=4.0;
-
-	double *initmessage3 = (double *)imalloc(E,2*sizeof(double));
-	initmessage3[0]=5.0;
-	initmessage3[1]=6.0;
-	
-	double *initmessage4 = (double *)imalloc(E,2*sizeof(double));
-	initmessage4[0]=10.0;
-	initmessage4[1]=10.0;
-
-	mvec *message1 = (mvec *)imalloc(E,1*sizeof(mvec));
-	mvec *message2 = (mvec *)imalloc(E,1*sizeof(mvec));
-	mvec *message3 = (mvec *)imalloc(E,1*sizeof(mvec));
-	mvec *message4 = (mvec *)imalloc(E,1*sizeof(mvec));
-	message1->length = 2;
-	message1->vector = initmessage1;
-	message2->length = 2;
-	message2->vector = initmessage2;
-	message3->length = 2;
-	message3->vector = initmessage3;
-	message4->length = 2;
-	message4->vector = initmessage4;
-	*/
-
-	//Observed variable nodes
-	((hfactor *)x1->ndata)->observed = 'f';
-	((hfactor *)x2->ndata)->observed = 'f';
-	((hfactor *)x3->ndata)->observed = 'f';
-	((hfactor *)x4->ndata)->observed = 'f';
-
-	//Initialise lists for messages in
-	((hfactor *)x1->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
-	((hfactor *)fa->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
-	((hfactor *)x2->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
-	((hfactor *)fb->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
-	((hfactor *)x3->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
-	((hfactor *)fc->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
-	((hfactor *)x4->ndata)->messagesin = (mvec **)imalloc(E,1*sizeof(mvec*));
-	
-	((hfactor *)x1->ndata)->nmessages = 0;
-	((hfactor *)fa->ndata)->nmessages = 0;
-	((hfactor *)x2->ndata)->nmessages = 0;
-	((hfactor *)fb->ndata)->nmessages = 0;
-	((hfactor *)x3->ndata)->nmessages = 0;
-	((hfactor *)fc->ndata)->nmessages = 0;
-	((hfactor *)x4->ndata)->nmessages = 0;
-
-	//Test
-/*	double *testx2val = (double *)imalloc(E,4*sizeof(double));
-	double *testx3val = (double *)imalloc(E,3*sizeof(double));
-	testx2val[0] = 1;
-	testx2val[1] = 2;
-	testx2val[2] = 3;
-	testx2val[3] = 4;
-
-	testx3val[0] = 1;
-	testx3val[1] = 2;
-	testx3val[2] = 3;
-
-	((hfactor *)fb->ndata)->columndiscretevalues = testx2val;
-	((hfactor *)fb->ndata)->rowdiscretevalues = testx3val;	
-	((hfactor *)x2->ndata)->observed = 't';
-	((hfactor *)x2->ndata)->observedvariable = 2;
-
-	mvec *test= sumobservednode(fb, x2);
-*/
 	//Output to arglist
 	arglist=NULL;
 	dynamic_putarg("graph.hgph","hgph",(void *)graph,SZ,&arglist);
@@ -678,6 +618,7 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 			msgvec[i] = 1;
 		}		
 		message->vector = msgvec;
+		message->sender = currentnode->nhash;
 		message->length = msgveclength;
 		addmessagetonode(message, callingnode); //Attach full message to callingnode
 		return;
@@ -727,13 +668,15 @@ void forwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 			if(((hfactor*)nextnode->ndata)->observed == 'f') //If the previous node was unobserved
 			{
-				mvec *message = SumRowsOrCols(currentnode, nextnode);		
-				addmessagetonode(message,callingnode);
+				mvec *message = SumRowsOrCols(currentnode, nextnode);
+				mvec *sendingmsg = makeoutgoingfmsg(message, currentnode, nextnode);
+				addmessagetonode(sendingmsg,callingnode);
 			}
 			else //If the previous node was observed - take only the associated row or column
 			{
 				mvec *message = sumobservednode(currentnode, nextnode);
-				addmessagetonode(message,callingnode);
+				mvec *sendingmsg = makeoutgoingfmsg(message, currentnode, nextnode);
+				addmessagetonode(sendingmsg,callingnode);
 			}
 			return;
 		}
@@ -820,7 +763,7 @@ void writeresultstofile(hgph *graph)
 		for(j=0;j<hfac->nmessages;j++) //For each message
 		{		
 			vec = hfac->messagesin[j];			
-			fprintf(fpointer, "Message #%d \n", j);
+			fprintf(fpointer, "Message #%d \t from %d\n", j, vec->sender);
 			
 			for(k=0;k<vec->length;k++) //For each vector element
 			{
@@ -888,6 +831,7 @@ mvec *SumRowsOrCols(nodes *factornode, nodes *previousnode)
 		message->length = ncol;
 	}
 	
+	message->sender = factornode->nhash;
 	message->vector = result;
 
 	return message;
@@ -945,6 +889,7 @@ mvec *sumobservednode(nodes *factornode, nodes *observednode)
 		}
 	}
 
+	answer->sender = factornode->nhash;
 	answer->length = length;
 	answer->vector = vect;
 	return answer;
@@ -958,7 +903,7 @@ mvec *productofmessagesin(nodes *targetnode)
 	mvec** list = tnodehfac->messagesin;
 	int nmessages = tnodehfac->nmessages;
 	int length;
-	mvec *product = (mvec *)imalloc(E,1*sizeof(mvec));;
+	mvec *product = (mvec *)imalloc(E,1*sizeof(mvec));
 
 	if(nmessages == 0) //If there are no messages in that node, a scalar of 1 is produced
 	{
@@ -974,7 +919,7 @@ mvec *productofmessagesin(nodes *targetnode)
 	else //If there are multiple messages, product one by one
 	{	
 		length = list[0]->length;
-		double vect[length];	
+		double *vect = (double *)imalloc(E,length*sizeof(double));	
 		int j;
 		int i = 0; // Goes according to length of the vector
 		for(i;i<length;i++)
@@ -987,6 +932,7 @@ mvec *productofmessagesin(nodes *targetnode)
 			}
 			
 		}
+		product->sender = targetnode->nhash;
 		product->length = length;
 		product->vector = vect;
 		
@@ -1034,6 +980,50 @@ mvec *productofvectors(mvec *vecA, mvec *vecB)
 	return answer;
 }
 
+mvec *makeoutgoingfmsg(mvec *factorsum, nodes *factornode, nodes *previousnode)
+{
+//--------------------------Creates the outgoing msg from a factor node
+//-------Multiplies the factor msg with the incoming node message to create outgoing factor message
+
+	hfactor *fnode = ((hfactor *)factornode->ndata);
+
+	//Determine the message that was sent to it by the previous var node
+	int n = 0;
+	while(n < fnode->nmessages)
+	{
+		if(fnode->messagesin[n]->sender == previousnode->nhash ) break;
+		n++;
+	}
+
+	//Determine the two vectors to be producted together
+	mvec *vecA = factorsum;
+	mvec *vecB = fnode->messagesin[n];
+
+	//Check to ensure the length of both vectors is the same
+	if(vecA->length != vecB->length) return NULL;
+
+	//Does the product multiplication
+	int length = vecA->length;
+	mvec *answer = (mvec *)imalloc(E,1*sizeof(mvec));
+	double *vec = (double *)imalloc(E,length*sizeof(double));
+	answer->length = vecA->length;
+
+	int i = 0;
+	for(i; i<length; i++)
+	{
+		vec[i] = vecA->vector[i] * vecB->vector[i];		
+	}
+	
+	answer->sender = factornode->nhash;
+	answer->vector = vec;
+	
+	//Free factor sum
+	factorsum->vector = ifree(E,factorsum->vector);
+	factorsum=ifree(E,factorsum);
+	
+	return answer;
+
+}
 
 
 
