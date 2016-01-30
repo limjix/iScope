@@ -18,7 +18,12 @@ typedef struct hfactor
 //List of pointers to messages coming into node
 	mvec **messagesin; //List of pointers, hence void **
 	int nmessages; //How many messages
+	mvec **bmessagesin; //Messages from backward propagation
+	int nbmessages; //Number of messages from backward propagation
 	unsigned *fedges; //List of forwardedges
 	unsigned *bedges; //List of backwardedges
+
+//Marginals
+	mvec *marginal;
  
 } hfactor;
