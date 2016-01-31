@@ -1,6 +1,7 @@
 typedef struct hfactor
 {
 	char type; //identifies type as either variable (v) or factor(f)
+	char *name; //Gives name to this node
 
 //In the case it is a factornode - It needs to store a probability distribution
 	double *probdist;

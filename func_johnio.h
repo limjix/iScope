@@ -28,4 +28,4 @@ mvec *SumRowsOrCols(nodes *factornode, nodes *previousnode, char specify);
 mvec *sumobservednode(nodes *factornode, nodes *observednode);
 mvec *productofvectors(mvec* vecA, mvec* vecB);
 mvec *productofmessagesin(nodes *targetnode, char specify);
-mvec *makeoutgoingfmsg(mvec *factorsum, nodes *factornode, nodes *previousnode);
+mvec *MsgToObservedNode(nodes *factornode, nodes *nextnode);
