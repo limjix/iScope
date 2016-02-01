@@ -572,7 +572,7 @@ void *john_sumproductalgorithm(void *arglist)
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
 
 	//Choose the root node
-	root = find_node(str_hash("x2"),graph->nnodes,graph->nodelist);
+	root = find_node(str_hash("x4"),graph->nnodes,graph->nodelist);
 
 	//Call the recursion step
 	forwardtraverse(root,root,graph);
@@ -731,6 +731,7 @@ void backwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 	if(currentnode==callingnode) nforwardbranches = nbranches;
 
 	char type = ((hfactor*)currentnode->ndata)->type;
+	char callingobs = ((hfactor*)callingnode->ndata)->observed;
 	nodes *nextnode;
 	
 //-----------------------------Find forward branches-------------------------------------------------
@@ -739,16 +740,15 @@ void backwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 		unsigned *forwardedges = ((hfactor*)currentnode->ndata)->fedges;
 
 //-----------------------------Calculate & send message first----------------------------------------------------
-	if (currentnode==callingnode) //If this is the root node --- Message is 1
+	if (currentnode==callingnode) //If this is the root node --- Message is 1 if only 1 branch, product of messages if not
 	{
 		int msgveclength;
 		mvec *message;
-		
 		int k = 0;
-		for(k;k<nforwardbranches;k++) // For each nextnode
+		if(nforwardbranches == 1) //If only has 1 outgoing connection
 		{
 			message = (mvec *)imalloc(E,1*sizeof(mvec)); //Allocate memory for message
-			nextnode= find_node(forwardedges[k],graph->nnodes,graph->nodelist);
+			nextnode= find_node(forwardedges[0],graph->nnodes,graph->nodelist);
 
 			//Determine length of message vector	
 			if(((hfactor *)nextnode->ndata)->columnlabel == currentnode->nhash) //If prob dist column is for the current node,
@@ -762,26 +762,36 @@ void backwardtraverse(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 			//Allocate memory for vector and initialise value to 1 as per theory
 			double *msgvec = (double *)imalloc(E,msgveclength*sizeof(double));
-			int i = 0;
-			for(i;i<msgveclength;i++)
+			int i;
+			for(i=0;i<msgveclength;i++)
 			{
 				msgvec[i] = 1;
-			}		
+			}	
 			message->vector = msgvec;
 			message->sender = currentnode->nhash;
 			message->length = msgveclength;
-			
-			addmessagetonodeB(message, nextnode); //Attach full message to callingnode
-		}
 		
+			addmessagetonodeB(message, nextnode); //Attach full message to callingnode
+
+		}
+		else //If it has multiple outgoing connections
+		{
+			for(k;k<nforwardbranches;k++) // For each nextnode
+			{	
+				nextnode = find_node(forwardedges[k],graph->nnodes,graph->nodelist);
+				message = productofmessagesinB(currentnode, nextnode);
+				addmessagetonodeB(message, nextnode);
+			}
+		}
 	}
 	else if (type == 'v') //If this is a variable node --- Product of messages in
 	{
-		mvec *message = productofmessagesin(currentnode,'b'); //Products all the factor messages		
+		mvec *message;		
 		int k = 0;
 		for(k;k<nforwardbranches;k++) // For each nextnode
 		{	
 			nextnode = find_node(forwardedges[k],graph->nnodes,graph->nodelist);
+			message = productofmessagesinB(currentnode, nextnode);
 			addmessagetonodeB(message, nextnode);
 		}
 	}
@@ -1334,6 +1344,62 @@ mvec *MsgToObservedNode(nodes *factornode, nodes *nextnode)
 	message->vector = vec;
 	message->sender = factornode->nhash;
 	return message;
+}
+
+mvec *productofmessagesinB(nodes *targetnode, nodes *receivingnode)
+{
+	hfactor *thfac = (hfactor *)targetnode->ndata;
+	hfactor *rhfac = (hfactor *)targetnode->ndata;
+	mvec *message= (mvec *)imalloc(E,1*sizeof(mvec));
+	double *vec;
+
+	int nmessages = thfac->nmessages;
+	int nbmessages = thfac->nbmessages;
+
+	//Remove the receiving node's message from messagesin
+	mvec **messagein = thfac->messagesin;
+	mvec **msglist= (mvec **)imalloc(E,nmessages*sizeof(mvec*)); //list of messages to product
+
+	int j;
+	char receivingnodefound = 'f';
+	for( j=0; j<nmessages; j++)
+	{
+		if(receivingnodefound =='f')
+		{
+		  if(messagein[j]->sender==receivingnode->nhash) 
+		    { receivingnodefound = 't'; continue; }
+		  else msglist[j] = messagein[j];
+		}
+		else msglist[j-1] = messagein[j];
+	}
+	nmessages--;
+	//Add the message from the backward path to the list
+	if(nbmessages!=0)
+	{
+		msglist[nmessages] = thfac->bmessagesin[0];
+		nmessages++;
+	}
+	//Product the messages
+
+	int i,k;
+	int length = msglist[0]->length;
+	vec = (double *)imalloc(E,length*sizeof(double));
+	for(i=0;i<length;i++) //For each element
+	{
+		vec[i]=1;
+		for(k=0; k<nmessages;k++) //For each message
+		{	
+			vec[i]= vec[i]*(msglist[k]->vector[i]);
+		}
+	}
+	
+	//Free messagelist
+	msglist=ifree(E,msglist);
+	message->vector = vec;
+	message->length = length;
+	message->sender = targetnode->nhash;
+	return message;
+
 }
 
 

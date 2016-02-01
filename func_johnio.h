@@ -29,3 +29,4 @@ mvec *sumobservednode(nodes *factornode, nodes *observednode);
 mvec *productofvectors(mvec* vecA, mvec* vecB);
 mvec *productofmessagesin(nodes *targetnode, char specify);
 mvec *MsgToObservedNode(nodes *factornode, nodes *nextnode);
+mvec *productofmessagesinB(nodes *targetnode, nodes *receivingnode);
