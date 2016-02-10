@@ -1,0 +1,3 @@
+graph:hgph<=maxsum.maxsuminit<=;
+graph:hgph<=maxsum.MSsetupproblem<=hgph:graph;
+<=maxsum.MaxSumAlgorithm<=hgph:graph,root:'x1';

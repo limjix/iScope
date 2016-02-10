@@ -13,18 +13,31 @@ typedef struct hfactor
 	unsigned rowlabel;    //Node str Hash
 
 //In the case it is a variable node & is observed value
-	char observed;	
+	char observed;
 	double observedvariable;
 
+//---------------- Sum Product -------------------------------------------
 //List of pointers to messages coming into node
 	mvec **messagesin; //List of pointers, hence void **
 	int nmessages; //How many messages
 	mvec **bmessagesin; //Messages from backward propagation
 	int nbmessages; //Number of messages from backward propagation
 	unsigned *fedges; //List of forwardedges
-	unsigned *bedges; //List of backwardedges
 
 //Marginals
 	mvec *marginal;
- 
+
+//-------------------- Max Sum ---------------------------------------
+
+	double *lnprobdist; //Logarithmic form of prob dist
+
+	int nMSmsgin; //Number of messages in
+	mvec **MSmsgin;
+
+	int nMSstore; //Gives indication if it is present
+	mvec *MSstore;
+
+	double *backmsg;
+	double *MostLikelyState;
+
 } hfactor;

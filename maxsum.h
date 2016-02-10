@@ -11,8 +11,8 @@
 #include "struct_hobj.h"
 #include "struct_xclient.h"
 #include "struct_hvec.h"
-#include "struct_hfactor.h"
 #include "struct_mvec.h"
+#include "struct_hfactor.h"
 
 #include "func_callbackio.h"
 #include "func_dynamicio.h"
@@ -22,3 +22,4 @@
 #include "func_utilitiesio.h"
 #include "func_johnio.h"
 #include "func_graphio.h"
+#include "func_maxsum.h"
