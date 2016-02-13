@@ -72,12 +72,12 @@ void *maxsum_MSsetupproblem(void *arglist)
 //	probdist1[2] = 0.3;
 //	probdist1[3] = 0.0;
 
-/*	probdist1[0] = 0.3;
+	probdist1[0] = 0.3;
 	probdist1[1] = 0.4;
 	probdist1[2] = 0.5;
 	probdist1[3] = 0.3;
 	probdist1[4] = 0.1;
-	probdist1[5] = 0.6; */
+	probdist1[5] = 0.6;
 
 	double *probdist2; //fa
 	probdist2 =(double *)imalloc(E,6*sizeof(double));
@@ -92,12 +92,12 @@ void *maxsum_MSsetupproblem(void *arglist)
 //	probdist2[2] = 0.3;
 //	probdist2[3] = 0.5;
 
-	/*probdist2[0] = 0.5;
-	probdist2[1] = 0.2;
-	probdist2[2] = 0.3;
-	probdist2[3] = 0.5;
-	probdist2[4] = 0.1;
-	probdist2[5] = 0.2;*/
+	probdist2[0] = 0.5;
+	probdist2[1] = 0.3;
+	probdist2[2] = 0.1;
+	probdist2[3] = 0.2;
+	probdist2[4] = 0.5;
+	probdist2[5] = 0.2;
 
 	double *probdist3; //fb
 	probdist3 =(double *)imalloc(E,6*sizeof(double));
@@ -112,12 +112,12 @@ void *maxsum_MSsetupproblem(void *arglist)
 //	probdist3[2] = 0.1;
 //	probdist3[3] = 0.3;
 
-/*	probdist3[0] = 0.7;
+	probdist3[0] = 0.7;
 	probdist3[1] = 0.2;
 	probdist3[2] = 0.3;
 	probdist3[3] = 0.1;
 	probdist3[4] = 0.3;
-	probdist3[5] = 0.5; */
+	probdist3[5] = 0.5;
 
 	//Populate factor payloads with probability distribution
 	double *discretevalue = (double *)imalloc(E,2*sizeof(double));
@@ -130,58 +130,58 @@ void *maxsum_MSsetupproblem(void *arglist)
 	disval[2] = 2.0;
 
 	((hfactor *)fa->ndata)->probdist = probdist2;
-	((hfactor *)fa->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fa->ndata)->columndiscretevalues = disval;
 	((hfactor *)fa->ndata)->rowdiscretevalues = discretevalue;
 	((hfactor *)fa->ndata)->columnlabel = str_hash("x2");
 	((hfactor *)fa->ndata)->rowlabel = str_hash("x1");
-	((hfactor *)fa->ndata)->ncol = 2;
+	((hfactor *)fa->ndata)->ncol = 3;
 	((hfactor *)fa->ndata)->nrow = 2;
 
 
 	((hfactor *)fb->ndata)->probdist = probdist3;
-	((hfactor *)fb->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fb->ndata)->columndiscretevalues = disval;
 	((hfactor *)fb->ndata)->rowdiscretevalues = discretevalue;
 	((hfactor *)fb->ndata)->columnlabel = str_hash("x2");
 	((hfactor *)fb->ndata)->rowlabel = str_hash("x3");
-	((hfactor *)fb->ndata)->ncol = 2;
+	((hfactor *)fb->ndata)->ncol = 3;
 	((hfactor *)fb->ndata)->nrow = 2;
 
 
 	((hfactor *)fc->ndata)->probdist = probdist1;
-	((hfactor *)fc->ndata)->columndiscretevalues = discretevalue;
+	((hfactor *)fc->ndata)->columndiscretevalues = disval;
 	((hfactor *)fc->ndata)->rowdiscretevalues = discretevalue;
 	((hfactor *)fc->ndata)->columnlabel = str_hash("x2");
 	((hfactor *)fc->ndata)->rowlabel = str_hash("x4");
-	((hfactor *)fc->ndata)->ncol = 2;
+	((hfactor *)fc->ndata)->ncol = 3;
 	((hfactor *)fc->ndata)->nrow = 2;
 
 	//Test observed node
-	//((hfactor *)x1->ndata)->observed = 't';
-	//((hfactor *)x1->ndata)->observedvariable = 1.0;
+	//((hfactor *)x3->ndata)->observed = 't';
+  //((hfactor *)x3->ndata)->observedvariable = 1.0;
 
 //Create ln probdist
-	double *lnprobdistfa = (double *)imalloc(E,4*sizeof(double));
-	double *lnprobdistfb = (double *)imalloc(E,4*sizeof(double));
-	double *lnprobdistfc = (double *)imalloc(E,4*sizeof(double));
+//	double *lnprobdistfa = (double *)imalloc(E,4*sizeof(double));
+//	double *lnprobdistfb = (double *)imalloc(E,4*sizeof(double));
+//	double *lnprobdistfc = (double *)imalloc(E,4*sizeof(double));
 
-	lnprobdistfa[0] = 1;
-	lnprobdistfa[1] = 4;
-	lnprobdistfa[2] = 3;
-	lnprobdistfa[3] = 5;
+//	lnprobdistfa[0] = 1;
+//	lnprobdistfa[1] = 4;
+//	lnprobdistfa[2] = 3;
+//	lnprobdistfa[3] = 5;
 
-	lnprobdistfb[0] = 6;
-	lnprobdistfb[1] = 5;
-	lnprobdistfb[2] = 7;
-	lnprobdistfb[3] = 9;
+//	lnprobdistfb[0] = 6;
+//	lnprobdistfb[1] = 5;
+//	lnprobdistfb[2] = 7;
+//	lnprobdistfb[3] = 9;
 
-	lnprobdistfc[0] = 9;
-	lnprobdistfc[1] = 3;
-	lnprobdistfc[2] = 2;
-	lnprobdistfc[3] = 3;
+//	lnprobdistfc[0] = 9;
+//	lnprobdistfc[1] = 3;
+//	lnprobdistfc[2] = 2;
+//	lnprobdistfc[3] = 3;
 
-	((hfactor *)fa->ndata)->lnprobdist = lnprobdistfa;
-	((hfactor *)fb->ndata)->lnprobdist = lnprobdistfb;
-	((hfactor *)fc->ndata)->lnprobdist = lnprobdistfc;
+//	((hfactor *)fa->ndata)->lnprobdist = lnprobdistfa;
+//	((hfactor *)fb->ndata)->lnprobdist = lnprobdistfb;
+//	((hfactor *)fc->ndata)->lnprobdist = lnprobdistfc;
 
 	//Output to arglist
 	arglist=NULL;
@@ -196,6 +196,9 @@ void *maxsum_MaxSumAlgorithm(void *arglist)
 	hgph *graph;
 	nodes *root;
 	char *userinputroot;
+	int n;
+	hfactor *hfac;
+
 	//Get previous hgph struct
 	if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
 	if(!invalidptr(E,argptr)) graph=(hgph *) argptr;
@@ -207,9 +210,25 @@ void *maxsum_MaxSumAlgorithm(void *arglist)
 	//Choose the root node
 	root = find_node(str_hash(userinputroot),graph->nnodes,graph->nodelist);
 
+	//Ensures lnprobdist is set up
+
+	for(n=0;n<graph->nnodes;n++) //for every node
+	{
+		hfac = (hfactor *)graph->nodelist[n]->ndata;
+		if(hfac->type == 'f')
+		{
+			if(hfac->lnprobdist==NULL)
+			{
+				CreateLnDist(graph);
+				break;
+			}
+			else break;
+		}
+	}
+
 	//Call the recursion step
 	MSleaftoroot(root,root,graph);
-	//MSbacktrack(root,root,graph);
+	MSbacktrack(root,root,graph);
 
 	//Test
 	nodes *x1 = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
@@ -227,6 +246,8 @@ void *maxsum_MaxSumAlgorithm(void *arglist)
 	hfactor *hfa = (hfactor *)fa->ndata;
 	hfactor *hfb = (hfactor *)fb->ndata;
 	hfactor *hfc = (hfactor *)fc->ndata;
+
+	MSwriteresultstofile(graph);
 
 	//Return arglist
 	arglist=NULL;
@@ -307,7 +328,7 @@ void MSleaftoroot(nodes *currentnode,nodes *callingnode, hgph *graph)
 				MSaddstoretonode(pkg[1], nextnode);
 				//((hfactor *)nextnode->ndata)->MSstore = pkg[1];
 				//((hfactor *)nextnode->ndata)->nMSstore++;
-				//pkg = ifree(E,pkg);
+				pkg = ifree(E,pkg);
 			}
 			else //If it is unobserved
 			{
@@ -316,7 +337,7 @@ void MSleaftoroot(nodes *currentnode,nodes *callingnode, hgph *graph)
 				MSaddstoretonode(pkg[1], nextnode);
 				//((hfactor *)nextnode->ndata)->MSstore = pkg[1];
 				//((hfactor *)nextnode->ndata)->nMSstore++;
-				//pkg = ifree(E,pkg);
+				pkg = ifree(E,pkg);
 			}
 
 		}
@@ -364,8 +385,9 @@ void MSbacktrack(nodes *currentnode,nodes *callingnode, hgph *graph)
 		}
 		else //If this is a factor node - Find previousnode MLS value and store
 		{
-			((hfactor*)callingnode->ndata)->MostLikelyState=
-				((hfactor*)currentnode->ndata)->backmsg;
+			((hfactor*)currentnode->ndata)->MostLikelyState=
+				((hfactor*)callingnode->ndata)->MostLikelyState;
+
 		}
 
 	//---------------------------Recurse down---------------------------------
@@ -375,7 +397,7 @@ void MSbacktrack(nodes *currentnode,nodes *callingnode, hgph *graph)
 		nextnode = find_node(forwardedges[k],graph->nnodes,graph->nodelist);
 		MSbacktrack(nextnode,currentnode,graph);
 	}
-
+	return;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -412,6 +434,40 @@ double *convertPDtoln(hfactor *hfac)
 void CreateLnDist(hgph *graph)
 {
 //--------------------Trawls through the graph and updates all factor nodes with log probability distributions
+
+	int nrow;
+	int ncol;
+	int nelements;
+	double *probdist, *lnprobdist;
+	int n, i;
+	hfactor *hfac;
+	int nnodes = graph->nnodes;
+
+	for(n=0;n<nnodes;n++) //For every node
+	{
+		hfac = (hfactor *)graph->nodelist[n]->ndata;
+		nrow = hfac->nrow;
+		ncol = hfac->ncol;
+		nelements = nrow *ncol;
+
+		probdist = hfac->probdist;
+		lnprobdist = (double *)imalloc(E,nelements*sizeof(double));
+
+		for(i=0;i<nelements;i++) //for each element
+		{
+			if(probdist[i]==0) //If the element has 0 probability, taking the ln of that will give an error. Hence instead use a very small value
+			{
+				lnprobdist[i] = log(0.000000001);
+			}
+			else
+			{
+				lnprobdist[i] = log(probdist[i]);
+			}
+		}
+
+		hfac->lnprobdist = lnprobdist; //Append to the node
+	}
+	return;
 
 }
 
@@ -452,8 +508,6 @@ void MSaddmessagetonode(mvec *message, nodes *targetnode)
 	return;
 }
 
-
-
 void MSwriteresultstofile(hgph *graph)
 {
 //--------------------Write results to file for debugging purposes---------------------------------
@@ -473,8 +527,8 @@ void MSwriteresultstofile(hgph *graph)
 
 		fprintf(fpointer, "***Node: %d\n", node->nhash);
 		fprintf(fpointer, "**Type: %c\n", hfac->type);
-		fprintf(fpointer, "*nMSmsgin: %d\n", hfac->nMSmsgin);
-
+		fprintf(fpointer, "*nMSmsgin: %d\n\n", hfac->nMSmsgin);
+		fprintf(fpointer, "Forward:\n");
 		for(j=0;j<hfac->nMSmsgin;j++) //For each message in
 		{
 			vec = hfac->MSmsgin[j];
@@ -488,7 +542,7 @@ void MSwriteresultstofile(hgph *graph)
 		}
 
 		fprintf(fpointer,"\n");
-
+		fprintf(fpointer, "Backward:\n");
 		for(j=0;j<hfac->nMSstore;j++) //For each stored config
 		{
 			vec = hfac->MSstore;
@@ -499,10 +553,18 @@ void MSwriteresultstofile(hgph *graph)
 				fprintf(fpointer, "%f \t", vec->vector[k]);
 			}
 
-			fprintf(fpointer,"\n");
+			fprintf(fpointer,"\n\n");
 		}
 
-		fprintf(fpointer, "Best State: %f", hfac->MostLikelyState[0]);
+		if(hfac->type =='v')
+		{
+			fprintf(fpointer, "Best State: %f\n", hfac->MostLikelyState[0]);
+		}
+		else
+		{
+			fprintf(fpointer, "Back Message: %f\n", hfac->MostLikelyState[0]);
+		}
+		fprintf(fpointer, "---------------------------------------------------------------------\n");
 	}
 
 	fclose(fpointer);
@@ -513,7 +575,7 @@ void MSwriteresultstofile(hgph *graph)
 void MSaddbacktrackmsg(double *message, nodes *targetnode)
 {
 	hfactor* hfac = (hfactor *)targetnode->ndata;
-	hfac->backmsg = message;
+	hfac->MostLikelyState = message;
 
 	return;
 }
@@ -622,7 +684,7 @@ mvec **MSFactorToVarObserved(nodes *factornode, nodes *previousnode)
 	int length;
 	double *vec,*storevec;
 	mvec *message, *store;
-	mvec **msgout;
+	mvec **msgout=(mvec **)imalloc(E,2*sizeof(mvec*));
 	int i,n;
 	double value;
 
@@ -658,7 +720,7 @@ mvec **MSFactorToVarObserved(nodes *factornode, nodes *previousnode)
 		//Take said row
 		for(i=0; i<length; i++)
 		{
-			vec[i] = fnhfac->probdist[n*ncol+i]+messagein[0]->vector[n];
+			vec[i] = fnhfac->lnprobdist[n*ncol+i]+messagein[0]->vector[n];
 		}
 
 		//Store
@@ -684,7 +746,7 @@ mvec **MSFactorToVarObserved(nodes *factornode, nodes *previousnode)
 		//Take said column
 		for(i=0; i<length; i++)
 		{
-			vec[i] = fnhfac->probdist[i*ncol+n]+messagein[0]->vector[n];
+			vec[i] = fnhfac->lnprobdist[i*ncol+n]+messagein[0]->vector[n];
 		}
 
 		//Store
@@ -694,8 +756,10 @@ mvec **MSFactorToVarObserved(nodes *factornode, nodes *previousnode)
 		}
 	}
 
+	message->vector = vec;
 	message->length = length;
 	message->sender = factornode->nhash;
+	store->vector = storevec;
 	store->length = length;
 	store->sender = factornode->nhash;
 
@@ -832,7 +896,7 @@ double *MSfindbestconfig(nodes *variablenode, nodes *previousfactornode)
 	int n;
 	double *MLS = (double *)imalloc(E,1*sizeof(double));
 	//Look into the previous factor node to find back message
-	double *previousmsg = pfnhfac->backmsg;
+	double *previousmsg = pfnhfac->MostLikelyState;
 	mvec *store = vnhfac->MSstore;
 
 	//Which element in the vector is it

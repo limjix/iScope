@@ -9,3 +9,4 @@ void add_hfactortondata(nodes *curr,hfactor *hfac);
 hfactor *create_hfactor();
 void *john_testfunc(void *arglist);
 nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph, char type);
+void *john_initfromfile(void *arglist);

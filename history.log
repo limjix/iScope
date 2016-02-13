@@ -5,4 +5,5 @@
                                                                                              
 >0003 button_0c1 'script', for panel 0
                                                                                         
-<0004 tj3.script                                                                                                               
+<0004 testim.script                                                                                                            
+<0005 redraw panel 0 : reset                                                                                                   

@@ -377,6 +377,12 @@ nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph, char type)
 	name = str;
 	((hfactor *)node->ndata)->name = name;
 
+	//Initialise to Null the matrices
+	((hfactor *)node->ndata)->probdist = NULL;
+	((hfactor *)node->ndata)->columndiscretevalues = NULL;
+	((hfactor *)node->ndata)->rowdiscretevalues = NULL;
+	((hfactor *)node->ndata)->lnprobdist = NULL;
+
 	//Initialised Observed to false
 	((hfactor *)node->ndata)->observed = 'f';
 
@@ -397,4 +403,125 @@ nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph, char type)
 void *john_testfunc(void *arglist)
 {
 
+}
+
+//------------------------------------------------------------------------
+//------------------- Initialise Graph From File -------------------------
+//------------------------------------------------------------------------
+
+void *john_initfromfile(void *arglist)
+{
+	void *argptr;
+	char *filename;
+	FILE *fptr;
+	hgph *graph=(hgph *)imalloc(E,sizeof(hgph));
+	//Get user config file
+	if(dynamic_getarg(arglist,"Filename",&argptr)=='f') return NULL;
+	if(!invalidptr(E,argptr)) filename=(char *) argptr;
+
+	fptr = fopen(filename, "r+");
+
+	char indicator[MAXLEN];
+	char nodename[MAXLEN];
+	char test[MAXLEN];
+	char node1[MAXLEN], node2[MAXLEN];
+	char nodetype , terminate;
+	char rowlabel[MAXLEN];
+	char columnlabel[MAXLEN];
+	int nrow,ncol;
+	double store;
+	double *rowvec, *colvec, *matrix;
+	nodes *node, *nodea, *nodeb;
+	hfactor *hfac;
+
+	int i;
+
+	while(!feof(fptr))
+	{
+		fscanf(fptr, "%s", indicator); //Scans to see if Startnode or Startlink
+
+		if(strcmp(indicator,"--STARTNODE---------------------------------")==0) //If Node Creation
+		{
+			fscanf(fptr, "%*s %s", nodename); //Gets nodename
+			fscanf(fptr, "%*s %c", &nodetype); //Gets type
+
+			if(nodetype == 'f') //If it is factor need more data
+			{
+				//Create the Node
+				if(feof(fptr)) break;
+				node = createnode(1,1,nodename,graph,'f');
+				hfac = (hfactor *)node->ndata;
+
+				//Populate with data
+				fscanf(fptr, "%*s %s", rowlabel); //Gets rowlabel
+				hfac->rowlabel = str_hash(rowlabel);
+				fscanf(fptr, "%*s %s", columnlabel); //Gets columnlabel
+				hfac->columnlabel = str_hash(columnlabel);
+
+				fscanf(fptr, "%*s %d", &nrow); //Gets nrow
+				hfac->nrow = nrow;
+				fscanf(fptr, "%*s %d", &ncol); //Gets ncol
+				hfac->ncol = ncol;
+
+				rowvec = (double *)imalloc(E,nrow*sizeof(double));
+				colvec = (double *)imalloc(E,ncol*sizeof(double));
+				matrix = (double *)imalloc(E,ncol*nrow*sizeof(double));
+
+				fscanf(fptr, "%*s"); //Skips over "RowVal"
+				for(i=0;i<nrow;i++) //Stores each RowVal value
+				{
+					fscanf(fptr, "%lf", &store);
+					rowvec[i]=store;
+				}
+				hfac->rowdiscretevalues=rowvec;
+
+				fscanf(fptr, "%*s"); //Skips over "ColVal"
+				for(i=0;i<ncol;i++) //Stores each ColVal value
+				{
+					fscanf(fptr, "%lf", &store);
+					colvec[i]=store;
+				}
+				hfac->columndiscretevalues=colvec;
+
+				fscanf(fptr, "%*s"); //Skips over "Matrix"
+				for(i=0;i<(nrow*ncol);i++) //Stores each Matrix value
+				{
+					fscanf(fptr, "%lf", &store);
+					matrix[i] = store;
+				}
+				hfac->probdist = matrix;
+
+				fscanf(fptr, "%*s"); //Skips over "--EndNode"
+
+			}
+			else //If variable we are done
+			{
+				if(feof(fptr)) break;
+				createnode(1,1,nodename,graph,'v');
+
+				fscanf(fptr, "%*s"); //Skip --ENDNODE
+
+			}
+		}
+		else //If Link Creation
+		{
+			while(1)
+			{
+				fscanf(fptr, "%s %s %c", node1, node2, &terminate); // Scan for node names
+				nodea = find_node(str_hash(node1),graph->nnodes,graph->nodelist);
+				nodeb = find_node(str_hash(node2),graph->nnodes,graph->nodelist);
+				add_edge(nodea,nodeb);
+				if(terminate == ';') break;
+			}
+
+			fscanf(fptr, "%*s"); //Skip --ENDLINK //Assume end of file
+			break;
+		}
+	}
+
+	fclose(fptr);
+	arglist=NULL;
+	dynamic_putarg("graph.hgph","hgph",(void *)graph,SZ,&arglist);
+
+	return arglist;
 }

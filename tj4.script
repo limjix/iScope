@@ -1,0 +1,2 @@
+graph:hgph<=john.initfromfile<=Filename:'tsetup.conf';
+<=sumproduct.sumproductalgorithm<=hgph:graph,root:'x2';

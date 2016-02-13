@@ -37,7 +37,6 @@ typedef struct hfactor
 	int nMSstore; //Gives indication if it is present
 	mvec *MSstore;
 
-	double *backmsg;
 	double *MostLikelyState;
 
 } hfactor;
