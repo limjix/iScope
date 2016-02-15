@@ -525,3 +525,5 @@ void *john_initfromfile(void *arglist)
 
 	return arglist;
 }
+
+//test
