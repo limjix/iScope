@@ -5,5 +5,8 @@
                                                                                              
 >0003 button_0c1 'script', for panel 0
                                                                                         
-<0004 testim.script                                                                                                            
-<0005 redraw panel 0 : reset                                                                                                   
+<0004 tj5.script                                                                                                               
+<0005 Graph Init Successful                                                                                                    
+<0006 Max Sum Successful                                                                                                       
+<0007 File Output: MaxProductResults.txt                                                                                       
+<0008 Graph Successfully Deallocated                                                                                           

@@ -168,7 +168,7 @@ void *sumproduct_setupproblem(void *arglist)
 
 void *sumproduct_sumproductalgorithm(void *arglist)
 {
-	void *argptr, *argptr2;
+	void *argptr, *argptr2, *xptr;
 	hgph *graph;
 	nodes *root;
 	char *userinputroot;
@@ -180,6 +180,9 @@ void *sumproduct_sumproductalgorithm(void *arglist)
 	if(dynamic_getarg(arglist,"root",&argptr2)=='f') return NULL;
 	if(!invalidptr(E,argptr)) userinputroot=(char *) argptr2;
 
+	//Get Xptr
+	if(dynamic_getarg(arglist,"xclient",&xptr)=='f') return NULL;
+
 	//Choose the root node
 	root = find_node(str_hash(userinputroot),graph->nnodes,graph->nodelist);
 
@@ -188,7 +191,8 @@ void *sumproduct_sumproductalgorithm(void *arglist)
 	backwardtraverse(root,root,graph);
 	calculatemarginals(graph);
 
-	writeresultstofile(graph);
+	printtoclient("Sum Product Successful", xptr);
+	writeresultstofile(graph, xptr);
 
 	//Return arglist
 	arglist=NULL;
@@ -608,16 +612,18 @@ void addmessagetonodeB(mvec *messageptr, nodes *targetnode)
 	return;
 }
 
-void writeresultstofile(hgph *graph)
+void writeresultstofile(hgph *graph, void *xptr)
 {
 //--------------------Write results to file for debugging purposes---------------------------------
 	int nnodes = graph->nnodes;
 	FILE *fpointer;
-	fpointer = fopen("SumProductResults.txt","w");
+	char filename[MAXLEN] = "SumProductResults.txt";
+	fpointer = fopen(filename,"w");
 
 	nodes *node;
 	hfactor *hfac;
 	mvec *vec,*mag;
+	char resultstring[MAXLEN];
 
 	int i = 0;
 	int j = 0;
@@ -628,7 +634,7 @@ void writeresultstofile(hgph *graph)
 		hfac = (hfactor*)node->ndata;
 
 	//Forward Traverse
-		fprintf(fpointer, "***Node: %d\n", node->nhash);
+		fprintf(fpointer, "***Node: %s\n", hfac->name);
 		fprintf(fpointer, "*Nmessages: %d\n", hfac->nmessages);
 
 		for(j=0;j<(hfac->nmessages);j++) //For each message
@@ -664,7 +670,7 @@ void writeresultstofile(hgph *graph)
 	//Marginals
 		if(hfac->type =='v')
 		{
-			fprintf(fpointer, "*Marginals: \n");
+			fprintf(fpointer, "$$Marginals: \n");
 			mag = hfac->marginal;
 			for(j=0;j<(mag->length);j++)
 			{
@@ -676,6 +682,8 @@ void writeresultstofile(hgph *graph)
 
 	}
 
+	sprintf(resultstring, "File Output: %s", filename);
+	printtoclient(resultstring, xptr);
 	fclose(fpointer);
 
 	return;

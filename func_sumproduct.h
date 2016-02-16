@@ -9,7 +9,7 @@ void calculatemarginals(hgph *graph);
 //Supplementary Sumproduct
 void addmessagetonode(mvec *messageptr, nodes *targetnode);
 void addmessagetonodeB(mvec *messageptr, nodes *targetnode);
-void writeresultstofile(hgph *graph);
+void writeresultstofile(hgph *graph, void *xptr);
 
 //Message Creators
 mvec *SumRowsOrCols(nodes *factornode, nodes *previousnode, char specify);

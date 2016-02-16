@@ -192,7 +192,7 @@ void *maxsum_MSsetupproblem(void *arglist)
 
 void *maxsum_MaxSumAlgorithm(void *arglist)
 {
-	void *argptr, *argptr2;
+	void *argptr, *argptr2, *xptr;
 	hgph *graph;
 	nodes *root;
 	char *userinputroot;
@@ -206,6 +206,9 @@ void *maxsum_MaxSumAlgorithm(void *arglist)
 	//Get user input on root node
 	if(dynamic_getarg(arglist,"root",&argptr2)=='f') return NULL;
 	if(!invalidptr(E,argptr)) userinputroot=(char *) argptr2;
+
+	//Get Xptr
+	if(dynamic_getarg(arglist,"xclient",&xptr)=='f') return NULL;
 
 	//Choose the root node
 	root = find_node(str_hash(userinputroot),graph->nnodes,graph->nodelist);
@@ -247,7 +250,8 @@ void *maxsum_MaxSumAlgorithm(void *arglist)
 	hfactor *hfb = (hfactor *)fb->ndata;
 	hfactor *hfc = (hfactor *)fc->ndata;
 
-	MSwriteresultstofile(graph);
+	printtoclient("Max Sum Successful", xptr);
+	MSwriteresultstofile(graph, xptr);
 
 	//Return arglist
 	arglist=NULL;
@@ -508,16 +512,18 @@ void MSaddmessagetonode(mvec *message, nodes *targetnode)
 	return;
 }
 
-void MSwriteresultstofile(hgph *graph)
+void MSwriteresultstofile(hgph *graph, void *xptr)
 {
 //--------------------Write results to file for debugging purposes---------------------------------
 	int nnodes = graph->nnodes;
 	FILE *fpointer;
-	fpointer = fopen("MaxProductResults.txt","w");
+	char filename[MAXLEN] = "MaxProductResults.txt";
+	fpointer = fopen(filename,"w");
 
 	nodes *node;
 	hfactor *hfac;
 	mvec *vec,*mag;
+	char resultstring[MAXLEN];
 
 	int i,j,k;
 	for(i=0;i<nnodes;i++) //For each node
@@ -525,7 +531,7 @@ void MSwriteresultstofile(hgph *graph)
 		node = graph->nodelist[i];
 		hfac = (hfactor*)node->ndata;
 
-		fprintf(fpointer, "***Node: %d\n", node->nhash);
+		fprintf(fpointer, "***Node: %s\n", hfac->name);
 		fprintf(fpointer, "**Type: %c\n", hfac->type);
 		fprintf(fpointer, "*nMSmsgin: %d\n\n", hfac->nMSmsgin);
 		fprintf(fpointer, "Forward:\n");
@@ -558,7 +564,7 @@ void MSwriteresultstofile(hgph *graph)
 
 		if(hfac->type =='v')
 		{
-			fprintf(fpointer, "Best State: %f\n", hfac->MostLikelyState[0]);
+			fprintf(fpointer, "$$Best State: %f\n", hfac->MostLikelyState[0]);
 		}
 		else
 		{
@@ -567,6 +573,8 @@ void MSwriteresultstofile(hgph *graph)
 		fprintf(fpointer, "---------------------------------------------------------------------\n");
 	}
 
+	sprintf(resultstring, "File Output: %s", filename);
+	printtoclient(resultstring, xptr);
 	fclose(fpointer);
 
 	return;
