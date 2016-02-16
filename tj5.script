@@ -1,2 +1,3 @@
 graph:hgph<=john.initfromfile<=Filename:'tsetup.conf', xclient:xclient;
 <=maxsum.MaxSumAlgorithm<=hgph:graph,root:'x2', xclient:xclient;
+<=john.deallocategraph<=hgph:graph,xclient:xclient;

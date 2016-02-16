@@ -380,12 +380,14 @@ void MSbacktrack(nodes *currentnode,nodes *callingnode, hgph *graph)
 
 				nextnode = find_node(forwardedges[0],graph->nnodes,graph->nodelist);
 				msg = MSfindmax(currentnode, nextnode);
-				((hfactor*)currentnode->ndata)->MostLikelyState=msg;
+				((hfactor*)currentnode->ndata)->MostLikelyState=*msg;
+				msg = ifree(E,msg);
 		}
 		else if (type == 'v') //If this is a variable node - Determine best
 		{
 			msg = MSfindbestconfig(currentnode, callingnode);
-			((hfactor*)currentnode->ndata)->MostLikelyState=msg;
+			((hfactor*)currentnode->ndata)->MostLikelyState=*msg;
+			msg = ifree(E,msg);
 		}
 		else //If this is a factor node - Find previousnode MLS value and store
 		{
@@ -564,11 +566,11 @@ void MSwriteresultstofile(hgph *graph, void *xptr)
 
 		if(hfac->type =='v')
 		{
-			fprintf(fpointer, "$$Best State: %f\n", hfac->MostLikelyState[0]);
+			fprintf(fpointer, "$$Best State: %f\n", hfac->MostLikelyState);
 		}
 		else
 		{
-			fprintf(fpointer, "Back Message: %f\n", hfac->MostLikelyState[0]);
+			fprintf(fpointer, "Back Message: %f\n", hfac->MostLikelyState);
 		}
 		fprintf(fpointer, "---------------------------------------------------------------------\n");
 	}
@@ -580,13 +582,6 @@ void MSwriteresultstofile(hgph *graph, void *xptr)
 	return;
 }
 
-void MSaddbacktrackmsg(double *message, nodes *targetnode)
-{
-	hfactor* hfac = (hfactor *)targetnode->ndata;
-	hfac->MostLikelyState = message;
-
-	return;
-}
 
 void MSaddstoretonode(mvec *store, nodes *targetnode)
 {
@@ -904,7 +899,7 @@ double *MSfindbestconfig(nodes *variablenode, nodes *previousfactornode)
 	int n;
 	double *MLS = (double *)imalloc(E,1*sizeof(double));
 	//Look into the previous factor node to find back message
-	double *previousmsg = pfnhfac->MostLikelyState;
+	double previousmsg = pfnhfac->MostLikelyState;
 	mvec *store = vnhfac->MSstore;
 
 	//Which element in the vector is it
@@ -913,7 +908,7 @@ double *MSfindbestconfig(nodes *variablenode, nodes *previousfactornode)
 	{
 		while(n<store->length)
 		{
-			if(*previousmsg == pfnhfac->rowdiscretevalues[n]) break;
+			if(previousmsg == pfnhfac->rowdiscretevalues[n]) break;
 			n++;
 		}
 		*MLS = store->vector[n];
@@ -922,7 +917,7 @@ double *MSfindbestconfig(nodes *variablenode, nodes *previousfactornode)
 	{
 		while(n<store->length)
 		{
-			if(*previousmsg == pfnhfac->columndiscretevalues[n]) break;
+			if(previousmsg == pfnhfac->columndiscretevalues[n]) break;
 			n++;
 		}
 		*MLS = store->vector[n];

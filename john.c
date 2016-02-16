@@ -827,9 +827,6 @@ void *john_deallocategraph(void *arglist)
 			{ hfac->MSstore= ifree(E,msg); }
 		}
 
-		//if(hfac->MostLikelyState)
-		//{ hfac->MostLikelyState = ifree(E,hfac->MostLikelyState); }
-
 		if(hfac)
 		{ hfac = ifree(E,hfac); }
 	}
