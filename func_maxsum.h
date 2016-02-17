@@ -6,7 +6,6 @@ void MSleaftoroot(nodes *currentnode,nodes *callingnode, hgph *graph);
 void MSbacktrack(nodes *currentnode,nodes *callingnode, hgph *graph);
 
 //Supplementary Max Sum
-double *convertPDtoln(hfactor *hfac);
 void CreateLnDist(hgph *graph);
 void MSaddmessagetonode(mvec *message, nodes *targetnode);
 void MSwriteresultstofile(hgph *graph, void *xptr);

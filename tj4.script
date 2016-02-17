@@ -1,2 +1,4 @@
-graph:hgph<=john.initfromfile<=Filename:'tsetup.conf', xclient:xclient;
-<=sumproduct.sumproductalgorithm<=hgph:graph,root:'x2',xclient:xclient;
+graph:hgph<=john.initfromfile<=Filename:'ValidationGraph.conf', xclient:xclient;
+graph:hgph<=john.observenode<=hgph:graph,Node:'x2',State:0.5,xclient:xclient;
+graph:hgph<=john.observenode<=hgph:graph,Node:'x6',State:1.0,xclient:xclient;
+<=sumproduct.sumproductalgorithm<=hgph:graph,root:'x1',xclient:xclient;

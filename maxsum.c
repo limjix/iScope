@@ -234,7 +234,7 @@ void *maxsum_MaxSumAlgorithm(void *arglist)
 	MSbacktrack(root,root,graph);
 
 	//Test
-	nodes *x1 = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
+/*	nodes *x1 = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
 	nodes *x2 = find_node(str_hash("x2"),graph->nnodes,graph->nodelist);
 	nodes *x3 = find_node(str_hash("x3"),graph->nnodes,graph->nodelist);
 	nodes *x4 = find_node(str_hash("x4"),graph->nnodes,graph->nodelist);
@@ -248,7 +248,7 @@ void *maxsum_MaxSumAlgorithm(void *arglist)
 	hfactor *hx4 = (hfactor *)x4->ndata;
 	hfactor *hfa = (hfactor *)fa->ndata;
 	hfactor *hfb = (hfactor *)fb->ndata;
-	hfactor *hfc = (hfactor *)fc->ndata;
+	hfactor *hfc = (hfactor *)fc->ndata;*/
 
 	printtoclient("Max Sum Successful", xptr);
 	MSwriteresultstofile(graph, xptr);
@@ -330,8 +330,6 @@ void MSleaftoroot(nodes *currentnode,nodes *callingnode, hgph *graph)
 				mvec **pkg = MSFactorToVarObserved(currentnode, nextnode);
 				MSaddmessagetonode(pkg[0], callingnode);
 				MSaddstoretonode(pkg[1], nextnode);
-				//((hfactor *)nextnode->ndata)->MSstore = pkg[1];
-				//((hfactor *)nextnode->ndata)->nMSstore++;
 				pkg = ifree(E,pkg);
 			}
 			else //If it is unobserved
@@ -339,8 +337,6 @@ void MSleaftoroot(nodes *currentnode,nodes *callingnode, hgph *graph)
 				mvec **pkg = MSFactorToVarUnobserved(currentnode, nextnode);
 				MSaddmessagetonode(pkg[0], callingnode);
 				MSaddstoretonode(pkg[1], nextnode);
-				//((hfactor *)nextnode->ndata)->MSstore = pkg[1];
-				//((hfactor *)nextnode->ndata)->nMSstore++;
 				pkg = ifree(E,pkg);
 			}
 
@@ -349,7 +345,6 @@ void MSleaftoroot(nodes *currentnode,nodes *callingnode, hgph *graph)
 	}
 	return;
 }
-
 
 void MSbacktrack(nodes *currentnode,nodes *callingnode, hgph *graph)
 {
@@ -410,33 +405,6 @@ void MSbacktrack(nodes *currentnode,nodes *callingnode, hgph *graph)
 //----------------------------------- Supplementary Max Sum Functions ------------------------------
 //--------------------------------------------------------------------------------------------------
 
-double *convertPDtoln(hfactor *hfac)
-{
-//-----------Converts a probability distribution in Hfac to be in natural logarithmic form
-
-	int nrow = hfac->nrow;
-	int ncol = hfac->ncol;
-	int nelements = nrow *ncol;
-	int i;
-
-	double *probdist = hfac->probdist;
-	double *lnprobdist = (double *)imalloc(E,nelements*sizeof(double));
-
-	for(i=0;i<nelements;i++) //for each element
-	{
-		if(probdist[i]==0) //If the element has 0 probability, taking the ln of that will give an error. Hence instead use a very small value
-		{
-			lnprobdist[i] = log(0.000000001);
-		}
-		else
-		{
-			lnprobdist[i] = log(probdist[i]);
-		}
-	}
-
-	return lnprobdist;
-}
-
 void CreateLnDist(hgph *graph)
 {
 //--------------------Trawls through the graph and updates all factor nodes with log probability distributions
@@ -444,7 +412,7 @@ void CreateLnDist(hgph *graph)
 	int nrow;
 	int ncol;
 	int nelements;
-	double *probdist, *lnprobdist;
+	double *probdist, *newprobdist;
 	int n, i;
 	hfactor *hfac;
 	int nnodes = graph->nnodes;
@@ -457,24 +425,23 @@ void CreateLnDist(hgph *graph)
 		nelements = nrow *ncol;
 
 		probdist = hfac->probdist;
-		lnprobdist = (double *)imalloc(E,nelements*sizeof(double));
+		newprobdist = (double *)imalloc(E,nelements*sizeof(double));
 
 		for(i=0;i<nelements;i++) //for each element
 		{
 			if(probdist[i]==0) //If the element has 0 probability, taking the ln of that will give an error. Hence instead use a very small value
 			{
-				lnprobdist[i] = log(0.000000001);
+				newprobdist[i] = log(0.000000001);
 			}
 			else
 			{
-				lnprobdist[i] = log(probdist[i]);
+				newprobdist[i] = log(probdist[i]);
 			}
 		}
 
-		hfac->lnprobdist = lnprobdist; //Append to the node
+		hfac->lnprobdist = newprobdist; //Append to the node
 	}
 	return;
-
 }
 
 void MSaddmessagetonode(mvec *message, nodes *targetnode)
@@ -647,7 +614,7 @@ mvec **MSFactorToVarUnobserved(nodes *factornode, nodes *previousnode)
 	}
 	else //If the previousnode is represented in the rows
 	{
-		length = fnhfac->ncol;
+		length = fnhfac->nrow;
 		vec = (double *)imalloc(E,length*sizeof(double));
 		storevec = (double *)imalloc(E,length*sizeof(double));
 		for(i=0;i<nrow;i++) //Moving along rows
@@ -734,7 +701,7 @@ mvec **MSFactorToVarObserved(nodes *factornode, nodes *previousnode)
 	}
 	else //If the previousnode is represented in the rows
 	{
-		length = fnhfac->ncol;
+		length = fnhfac->nrow;
 		vec = (double *)imalloc(E,length*sizeof(double));
 		storevec = (double *)imalloc(E,length*sizeof(double));
 
