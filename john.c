@@ -647,11 +647,31 @@ void *john_observenode(void *arglist)
 
 	//Find specified node
 	node=find_node(str_hash(nodename),gph->nnodes,gph->nodelist);
+
+	if(invalidptr(S,node)) //Checks if Node actually exists
+	{
+		sprintf(print, "%s Does Not Exist", nodename);
+		printtoclient("Does Not Exist", xptr);
+		arglist=NULL;
+		dynamic_putarg("graph.hgph","hgph",(void *)gph,SZ,&arglist);
+		return arglist;
+	}
+
 	hfac=(hfactor *)node->ndata;
 
 	//---check that there is such a state
 	//Find adjacent factornode
 	fnode = find_node(node->edge[0],gph->nnodes,gph->nodelist);
+
+	if(invalidptr(S,fnode))
+	{
+		printtoclient("Factor Node Not Found", xptr);
+		printtoclient("Not Observed", xptr);
+		arglist=NULL;
+		dynamic_putarg("graph.hgph","hgph",(void *)gph,SZ,&arglist);
+		return arglist;
+	}
+
 	hffac = (hfactor *)fnode->ndata;
 
 	//Determine if node is in row or col
@@ -723,7 +743,7 @@ void *john_unobservenode(void *arglist)
 	hfac->observed = 'f';
 
 	//set observed value
-	hfac->observedvariable = 0.000000012356267;
+	hfac->observedvariable = 0.000000012356267; //doesnt matter
 
 	sprintf(print,"Node %s marked unobserved", hfac->name);
 	printtoclient(print, xptr);
