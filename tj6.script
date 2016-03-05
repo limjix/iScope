@@ -1,0 +1,2 @@
+graph:hgph<=john.initfromfile<=Filename:'ValidateLoopy.conf', xclient:xclient;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient;

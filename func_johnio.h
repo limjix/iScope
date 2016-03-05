@@ -15,3 +15,4 @@ void *john_unobservenode(void *arglist);
 void *john_deallocategraph(void *arglist);
 void graphcheck(hgph *graph, void *xptr);
 void printtoclient(char str[MAXLEN], void *xptr);
+void NormaliseMVEC( mvec *msgvec);

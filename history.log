@@ -1,13 +1,6 @@
 0128                                                                                                                           
 <0001 context c:0 active
                                                                                                       
-<0002 context b:0 active by proxy
-                                                                                             
->0003 button_0c1 'script', for panel 0
-                                                                                        
-<0004 tj5.script                                                                                                               
-<0005 Graph Init Successful                                                                                                    
-<0006 Node x2 observed to be 0.500000                                                                                          
-<0007 Node x6 observed to be 1.000000                                                                                          
-<0008 Max Sum Successful                                                                                                       
-<0009 File Output: MaxProductResults.txt                                                                                       
+<0002 context c:0 active
+                                                                                                      
+<0003 <=xclient.callback_imgtoscreen<=xclient:xclient,panel:0,nx:2048,ny:2048;                                                 

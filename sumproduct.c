@@ -759,6 +759,7 @@ mvec *SumRowsOrCols(nodes *factornode, nodes *previousnode, char specify)
 
 	message->sender = factornode->nhash;
 	message->vector = result;
+	NormaliseMVEC(message);
 	return message;
 
 }
@@ -818,6 +819,7 @@ mvec *sumobservednode(nodes *factornode, nodes *observednode)
 	answer->sender = factornode->nhash;
 	answer->length = length;
 	answer->vector = vect;
+	NormaliseMVEC(answer);
 	return answer;
 }
 
@@ -876,7 +878,7 @@ mvec *productofmessagesin(nodes *targetnode, char specify)
 		product->vector = vect;
 
 	}
-
+	NormaliseMVEC(product);
 	return product;
 }
 
@@ -884,6 +886,7 @@ mvec *productofvectors(mvec *vecA, mvec *vecB)
 {
 //------------------Returns dot product of 2 vectors such as MATLAB ./ operator
 //------------------Works using the mvec container
+//---------__NOT USED CURRENTLY! JUST FOR EXAMPLE
 
 	//Check to ensure the length of both vectors is the same
 	if(vecA->length != vecB->length) return NULL;
@@ -960,6 +963,7 @@ mvec *MsgToObservedNode(nodes *factornode, nodes *nextnode)
 	}
 	message->vector = vec;
 	message->sender = factornode->nhash;
+	NormaliseMVEC(message);
 	return message;
 }
 
@@ -1015,8 +1019,9 @@ mvec *productofmessagesinB(nodes *targetnode, nodes *receivingnode)
 	message->vector = vec;
 	message->length = length;
 	message->sender = targetnode->nhash;
-	return message;
 
+	NormaliseMVEC(message);
+	return message;
 }
 
 

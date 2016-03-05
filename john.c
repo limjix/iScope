@@ -971,3 +971,29 @@ void graphcheck(hgph *graph, void *xptr)
 	printtoclient("Graph Check Success",xptr);
 	return;
 }
+
+void NormaliseMVEC(mvec *msgvec)
+{
+	//Normalises vector, doesn't mess with memory
+
+	//Normalise
+	int length = msgvec->length;
+	double *vector = msgvec->vector;
+
+	//1. Sum
+	double sumofelements= 0.0;
+	int m;
+
+	for(m=0;m<length;m++) //For every element - find sum
+	{
+		sumofelements = sumofelements + vector[m];
+	}
+
+	//2. Divide by sum
+	for(m=0;m<length;m++) //For every element - find sum
+	{
+		vector[m] = vector[m]/sumofelements;
+	}
+
+	return;
+}
