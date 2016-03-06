@@ -281,7 +281,41 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode)
   hfactor *hfacON = (hfactor *)outnode->ndata;
 
   double *probdist = hfacFN->probdist;
+  int i;
+  
+ 	int nedges = facnode->nedges;
+	unsigned *edges = facnode->edge;
 
+//-----Check to see if all messages present
+	 //Create list of incoming edges
+	 unsigned incomingedges[nedges-1];
+  char outedgefound = 'f';
+  for(i=0; i<nedges; j++)
+  {
+    if(outedgefound =='f')
+    {
+      if(edges[j]==outnode->nhash)
+        { outedgefound = 't'; continue; }
+      else incomingedges[j] = edges[j];
+    }
+    else incomingedges[j-1] = edges[j];
+  }
+
+  //Compare incoming edges and messages out
+  mvec **listofmessagestoproduct= (mvec **)imalloc(E,(nedges-1)*sizeof(mvec *));
+  for(i=0; i<nmessages ; i++) //Go down list of messages
+  {
+    for(j=0;j<(nedges-1);j++) //Go down list of incomingedges
+    {
+      if(incomingedges[j]==(msgin[i]->sender))
+      {
+        listofmessagestoproduct[j] = msgin[i];
+        msgcheck++;
+      }
+    }
+  }
+
+  if(msgcheck != (nedges-1)) return NULL; // BREAKS IF NOT ALL MESSAGES PRESENT!
 
 }
 
@@ -291,5 +325,7 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode)
 
 void *LSPCalcMarginals(hgph *graph)
 {
+//--------- Creates final marginal
+
 
 }
