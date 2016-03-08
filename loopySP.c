@@ -77,7 +77,7 @@ void *loopySP_algorithm(void *arglist)
 
 
 	iteration = 0;
-	while(iteration<1)
+	while(iteration<10)
 	{
 		//Update Factor
 		for(i=0;i<nfac;i++)
@@ -137,14 +137,14 @@ void LSPaddmessagetonode(mvec *msg, nodes *receivingnode)
   mvec **list = hfac->messagesin;
   int i;
   unsigned sender = msg->sender;
+	mvec *deallocate;
 
   //Scan through list to see if sender is present - Wouldn't run if no msg
   for(i=0;i<nmessages;i++)
   {
     if(list[i]->sender == sender) //Overwrite - nmessages no change
     {
-			//deallocatemvec(list[i]);
-			list[i]->vector = ifree(E,list[i]->vector); //PROBLEM
+			list[i]->vector = ifree(E,list[i]->vector);
 			list[i] = ifree(E,list[i]);
       list[i] = msg;
       return;
@@ -205,7 +205,7 @@ void *initialburstvariable(nodes *varnode , hgph *graph)
   //------ Length of unity vector corresponds to own number of states
   mvec *msg;
   hfactor *hfac = (hfactor *)varnode->ndata;
-  int i;
+  int i,k;
   int length;
   double *vector;
   nodes *receivingnode;
@@ -213,38 +213,38 @@ void *initialburstvariable(nodes *varnode , hgph *graph)
   int nedges = varnode->nedges;
   unsigned *edge = varnode->edge;
 
-  //Create msg out
-  msg = (mvec *)imalloc(E,1*sizeof(mvec));
-
-  //Determine number of states
-  //1. Find factornode
-  nodes *factorn = find_node(edge[0],graph->nnodes,graph->nodelist);
-  hfactor *hfactornode = (hfactor *)factorn->ndata;
-
-  if(hfactornode->columnlabel == varnode->nhash) //If column
+	for (k=0;k<nedges;k++) // For every outgoing edge
   {
-    length = hfactornode->ncol;
-  }
-  else
-  {
-    length = hfactornode->nrow;
-  }
+	  //Create msg out
+	  msg = (mvec *)imalloc(E,1*sizeof(mvec));
 
-  vector = (double *)imalloc(E,length*sizeof(double));
+	  //Determine number of states
+	  //1. Find factornode
+	  nodes *factorn = find_node(edge[0],graph->nnodes,graph->nodelist);
+	  hfactor *hfactornode = (hfactor *)factorn->ndata;
 
-  for(i=0;i<length;i++) // For each element
-  {
-    vector[i] = 1;
-  }
+	  if(hfactornode->columnlabel == varnode->nhash) //If column
+	  {
+	    length = hfactornode->ncol;
+	  }
+	  else
+	  {
+	    length = hfactornode->nrow;
+	  }
 
-  msg->length = length;
-  msg->sender = varnode->nhash;
-  msg->vector = vector;
+	  vector = (double *)imalloc(E,length*sizeof(double));
 
-  //Append to nodes
-  for (i=0;i<nedges;i++) // For every outgoing edge
-  {
-    receivingnode = find_node(edge[i],graph->nnodes,graph->nodelist);
+	  for(i=0;i<length;i++) // For each element
+	  {
+	    vector[i] = 1;
+	  }
+
+	  msg->length = length;
+	  msg->sender = varnode->nhash;
+	  msg->vector = vector;
+
+	  //Append to node
+    receivingnode = find_node(edge[k],graph->nnodes,graph->nodelist);
     LSPaddmessagetonode(msg,receivingnode);
   }
 
@@ -521,10 +521,10 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 			length = hfacFN->ncol;
 			vector = (double *)imalloc(E,length*sizeof(double));
 
-			for(i=0;i<length;i++)
+			for(i=0;i<length;i++) //Go left to right
 			{
 				vector[i] = 0;
-				for(j=0;j<(hfacFN->nrow);j++)
+				for(j=0;j<(hfacFN->nrow);j++) //Go Down row
 				{
 					vector[i] = vector[i] + probdist[j*(hfacFN->ncol)+i]*incomingvector[j];
 				}
@@ -536,12 +536,12 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 			length = hfacFN->nrow;
 			vector = (double *)imalloc(E,length*sizeof(double));
 
-			for(j=0;j<length;j++)
+			for(j=0;j<length;j++) //Go left to right
 			{
 				vector[j] = 0;
-				for(i=0;i<(hfacFN->ncol);i++)
+				for(i=0;i<(hfacFN->ncol);i++) //Go down row
 				{
-					vector[j] = vector[j] + probdist[i*(hfacFN->ncol)+j]*incomingvector[i];
+					vector[j] = vector[j] + probdist[j*(hfacFN->ncol)+i]*incomingvector[i];
 				}
 			}
 		}
