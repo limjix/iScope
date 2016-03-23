@@ -1,1 +1,1 @@
-image:image<=micrscan.init<=Filename:'Blob.slide', Heightpx:40, Widthpx:50, xclient:xclient;
+mcr:mcr<=micrscan.init<=Filename:'Blob.slide', Heightpx:40, Widthpx:50, xclient:xclient;

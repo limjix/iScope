@@ -1,3 +1,3 @@
 img:rgb<=xclient.importtoraster<=file:'instant0500.png';
+<=micrscan.testimage<=rgb:img;
 <-xclient.view<=objname:'img',xclient:xclient,panel:0;
-

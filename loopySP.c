@@ -6,7 +6,7 @@ void *loopySP_algorithm(void *arglist)
 	hgph *graph;
 	nodes *root;
 	char *userinputroot;
-  int i,k, iteration;
+  int i,k, iteration, nitr;
   hfactor *hfac;
   int nvar, nfac;
   nodes *node;
@@ -17,6 +17,10 @@ void *loopySP_algorithm(void *arglist)
 
 	//Get Xptr
 	if(dynamic_getarg(arglist,"xclient",&xptr)=='f') return NULL;
+
+	//Get previous hgph struct
+	if(dynamic_getarg(arglist,"iterations",&argptr2)=='f') return NULL;
+	if(!invalidptr(E,argptr)) nitr=*((int *) argptr2);
 
   //Get some stuff from graph
   int nnodes = graph->nnodes;
@@ -77,7 +81,7 @@ void *loopySP_algorithm(void *arglist)
 
 
 	iteration = 0;
-	while(iteration<10)
+	while(iteration<nitr)
 	{
 		//Update Factor
 		for(i=0;i<nfac;i++)
