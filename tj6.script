@@ -1,2 +1,4 @@
 graph:hgph<=john.initfromfile<=Filename:'ValidateLoopy.conf', xclient:xclient;
-<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:30;
+<=john.observenode<=hgph:graph,Node:'x4',State:0.2,xclient:xclient;
+<=john.observenode<=hgph:graph,Node:'x3',State:0.5,xclient:xclient;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:1, OutputFile:'Loopy.txt';

@@ -2,7 +2,7 @@
 
 void *loopySP_algorithm(void *arglist)
 {
-	void *argptr, *argptr2, *xptr;
+	void *argptr, *argptr2, *xptr, *argptr3;
 	hgph *graph;
 	nodes *root;
 	char *userinputroot;
@@ -10,6 +10,7 @@ void *loopySP_algorithm(void *arglist)
   hfactor *hfac;
   int nvar, nfac;
   nodes *node;
+	char *filename;
 
 	//Get previous hgph struct
 	if(dynamic_getarg(arglist,"hgph",&argptr)=='f') return NULL;
@@ -21,6 +22,10 @@ void *loopySP_algorithm(void *arglist)
 	//Get previous hgph struct
 	if(dynamic_getarg(arglist,"iterations",&argptr2)=='f') return NULL;
 	if(!invalidptr(E,argptr)) nitr=*((int *) argptr2);
+
+	//Get File Name
+	if(dynamic_getarg(arglist,"OutputFile",&argptr3)=='f') return NULL;
+	if(!invalidptr(E,argptr)) filename=(char *) argptr3;
 
   //Get some stuff from graph
   int nnodes = graph->nnodes;
@@ -99,7 +104,7 @@ void *loopySP_algorithm(void *arglist)
 		iteration++;
 	}
 	//----------------- Test ------------------------------------------------
-	nodes *x1 = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
+	/*nodes *x1 = find_node(str_hash("x1"),graph->nnodes,graph->nodelist);
 	nodes *x2 = find_node(str_hash("x2"),graph->nnodes,graph->nodelist);
 	nodes *x3 = find_node(str_hash("x3"),graph->nnodes,graph->nodelist);
 	nodes *x4 = find_node(str_hash("x4"),graph->nnodes,graph->nodelist);
@@ -115,10 +120,10 @@ void *loopySP_algorithm(void *arglist)
 	hfactor *hf12 = (hfactor *)f12->ndata;
 	hfactor *hf23 = (hfactor *)f23->ndata;
 	hfactor *hf34 = (hfactor *)f34->ndata;
-	hfactor *hf41 = (hfactor *)f41->ndata;
+	hfactor *hf41 = (hfactor *)f41->ndata;*/
 	//------------------------------------------------------------------------
-
-	LSPwritetofile(graph, xptr);
+	LoopyFindMaxState(graph);
+	LSPwritetofile(graph, xptr, filename);
 
   //Loop to Converge by doing serial updates
 
@@ -459,10 +464,11 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 			{
 				vector[i] = 0;
 				if(hfacON->observedvariable == hfacFN->columndiscretevalues[i]) vector[i] = 1;
+
 			}
 
 		}
-		else
+		else if(outnode->nhash == hfacFN->rowlabel)
 		{
 			length = hfacFN->nrow;
 			vector = (double *)imalloc(E,length*sizeof(double));
@@ -473,6 +479,13 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 				vector[i] = 0;
 				if(hfacON->observedvariable == hfacFN->rowdiscretevalues[i]) vector[i] = 1;
 			}
+		}
+		else
+		{
+			//Purposely break
+			msg = NULL;
+			invalidptr(E,msg);
+			return NULL;
 		}
 	}
 	//===================== Innode Observed ====================================
@@ -498,7 +511,7 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 
 		}
 
-		else //If outnode is in row, innode in column
+		else if (outnode->nhash == hfacFN->rowlabel) //If outnode is in row, innode in column
 		{
 			length = hfacFN->nrow;
 			vector = (double *)imalloc(E,length*sizeof(double));
@@ -515,6 +528,13 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 				vector[i] = probdist[i*(hfacFN->ncol)+n];
 			}
 
+		}
+		else
+		{
+			//RETURN ERROR
+			msg = NULL;
+			invalidptr(E,msg);
+			return NULL;
 		}
 	}
 	//========================Innode not observed===============================
@@ -535,7 +555,7 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 			}
 
 		}
-		else //If outnode is in row
+		else if(outnode->nhash == hfacFN->rowlabel)//If outnode is in row
 		{
 			length = hfacFN->nrow;
 			vector = (double *)imalloc(E,length*sizeof(double));
@@ -548,6 +568,13 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph)
 					vector[j] = vector[j] + probdist[j*(hfacFN->ncol)+i]*incomingvector[i];
 				}
 			}
+		}
+		else
+		{
+			//Purposely Break
+			msg = NULL;
+			invalidptr(E,msg);
+			return NULL;
 		}
 	}
 	//========================================================================
@@ -570,8 +597,8 @@ void *LSPCalcMarginals(hgph *graph)
 {
 //--------- Creates final marginal
 	nodes **nodelist = graph->nodelist;
-	nodes *node;
-	hfactor *hfac;
+	nodes *node, *facnode;
+	hfactor *hfac, *facnodehfac;
 	int nnodes = graph->nnodes;
 	int i,k,j;
 	int nmessages;
@@ -609,6 +636,25 @@ void *LSPCalcMarginals(hgph *graph)
 			NormaliseMVEC(marg);
 
 			LSPaddmarginaltonode(marg,node);
+
+			facnode = find_node(node->edge[0],graph->nnodes,graph->nodelist);
+
+			facnodehfac = (hfactor *)facnode->ndata;
+
+			//Append states vector for finding max vector
+			if(node->nhash == facnodehfac->rowlabel)
+			{
+				marg->states = facnodehfac->rowdiscretevalues;
+			}
+			else if (node->nhash == facnodehfac->columnlabel)
+			{
+				marg->states = facnodehfac->columndiscretevalues;
+			}
+			else
+			{
+				invalidptr(E,marg->states);
+				return NULL;
+			}
 		}
 	}
 	return;
@@ -618,12 +664,12 @@ void *LSPCalcMarginals(hgph *graph)
 //------------------------- Write to file ----------------------------------
 //--------------------------------------------------------------------------
 
-void LSPwritetofile(hgph *graph, void *xptr)
+void LSPwritetofile(hgph *graph, void *xptr, char *filename)
 {
 //--------------------Write results to file for debugging purposes---------------------------------
 	int nnodes = graph->nnodes;
 	FILE *fpointer;
-	char filename[MAXLEN] = "LoopySumProductResults.txt";
+	//char filename[MAXLEN] = "LoopySumProductResults.txt";
 	fpointer = fopen(filename,"w");
 
 	nodes *node;
@@ -641,7 +687,7 @@ void LSPwritetofile(hgph *graph, void *xptr)
 
 	//Forward Traverse
 		fprintf(fpointer, "***Node: %s\n", hfac->name);
-		fprintf(fpointer, "*Nmessages: %d\n", hfac->nmessages);
+/*		fprintf(fpointer, "*Nmessages: %d\n", hfac->nmessages);
 
 		for(j=0;j<(hfac->nmessages);j++) //For each message
 		{
@@ -654,7 +700,7 @@ void LSPwritetofile(hgph *graph, void *xptr)
 			}
 			fprintf(fpointer, "\n");
 		}
-		fprintf(fpointer, "\n");
+		fprintf(fpointer, "\n"); */
 
 	//Marginals
 		if(hfac->type =='v')
@@ -666,6 +712,8 @@ void LSPwritetofile(hgph *graph, void *xptr)
 				fprintf(fpointer, "%f \t", mag->vector[j]);
 			}
 			fprintf(fpointer, "\n");
+
+			fprintf(fpointer, "$$Best State: %lf\n", hfac->MostLikelyState);
 		}
 		fprintf(fpointer, "------------------------------------------------------------------\n");
 
@@ -674,6 +722,49 @@ void LSPwritetofile(hgph *graph, void *xptr)
 	sprintf(resultstring, "File Output: %s", filename);
 	printtoclient(resultstring, xptr);
 	fclose(fpointer);
+
+	return;
+}
+
+//----------------------------------------------------------------------------
+//------------------ Determine Most Likely State -----------------------------
+//----------------------------------------------------------------------------
+void LoopyFindMaxState(hgph *graph)
+{
+	//UPDATES GRAPH WITH MAXIMAL STATES
+	int i,j,n;
+	mvec *marg;
+	nodes *node;
+	hfactor *hfac;
+	int nnodes = graph->nnodes;
+	double bestprob;
+	double *vec;
+
+	for(i=0;i<nnodes;i++) //For every node find the max state
+	{
+			node = graph->nodelist[i];
+			hfac = (hfactor *)node->ndata;
+
+			if(hfac->type == 'v')
+			{
+				marg = hfac->marginal;
+				vec = marg->vector;
+
+				j = 0;
+				bestprob = -9999;
+				while(j<(marg->length))
+				{
+					if(vec[j]>bestprob)
+					{
+						bestprob = vec[j];
+						n=j;
+					}
+					j++;
+				}
+
+				hfac->MostLikelyState = marg->states[n];
+			}
+	}
 
 	return;
 }

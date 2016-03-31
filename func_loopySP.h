@@ -18,4 +18,6 @@ mvec *FactorNodeOutput(nodes *facnode, nodes *outnode, hgph *graph);
 void *LSPCalcMarginals(hgph *graph);
 
 //Write To file
-void LSPwritetofile(hgph *graph, void *xptr);
+void LSPwritetofile(hgph *graph, void *xptr, char *filename);
+
+void LoopyFindMaxState(hgph *graph);

@@ -389,6 +389,7 @@ nodes *createnode(int x, int y,char str[MAXLEN],hgph *graph, char type)
 
 	//Initialised Observed to false
 	((hfactor *)node->ndata)->observed = 'f';
+	((hfactor *)node->ndata)->seen = 'f';
 
 	//Initialise nmessages to zero
 	((hfactor *)node->ndata)->nmessages = 0;

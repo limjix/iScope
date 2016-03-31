@@ -1,1 +1,39 @@
-mcr:mcr<=micrscan.init<=Filename:'Blob.slide', Heightpx:40, Widthpx:50, xclient:xclient;
+mcr:mcr<=micrscan.init<=Filename:'Blob3.slide', Heightpx:40, Widthpx:50, Row:1 , Col:0, xclient:xclient;
+graph:hgph<=micrscan.CreateMicrGraph<=mcr:mcr;
+
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:1;
+<=micrscan.AnalyseBufferImages<=mcr:mcr, hgph:graph;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:5,OutputFile:'MICRRESULTS2.txt';
+<=micrscan.GraphStructToFile<=hgph:graph, xclient:xclient;
+
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:1,direction:3;
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:2;
+<=micrscan.AnalyseBufferImages<=mcr:mcr, hgph:graph;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:5,OutputFile:'MICRRESULTS3.txt';
+
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:1,direction:3;
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:1;
+<=micrscan.AnalyseBufferImages<=mcr:mcr, hgph:graph;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:5,OutputFile:'MICRRESULTS4.txt';
+
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:1,direction:3;
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:2;
+<=micrscan.AnalyseBufferImages<=mcr:mcr, hgph:graph;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:5,OutputFile:'MICRRESULTS5.txt';
+
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:1,direction:3;
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:1;
+<=micrscan.AnalyseBufferImages<=mcr:mcr, hgph:graph;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:5,OutputFile:'MICRRESULTS6.txt';
+<=micrscan.GraphStructToFile<=hgph:graph, xclient:xclient;
+
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:1,direction:3;
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:2;
+<=micrscan.AnalyseBufferImages<=mcr:mcr, hgph:graph;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:5,OutputFile:'MICRRESULTS7.txt';
+
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:1,direction:3;
+<=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:1;
+<=micrscan.AnalyseBufferImages<=mcr:mcr, hgph:graph;
+<=loopySP.algorithm<=hgph:graph, xclient:xclient, iterations:5,OutputFile:'MICRRESULTS8.txt';
+<=micrscan.GraphStructToFile<=hgph:graph, xclient:xclient;

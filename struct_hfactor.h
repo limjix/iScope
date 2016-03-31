@@ -15,6 +15,7 @@ typedef struct hfactor
 //In the case it is a variable node & is observed value
 	char observed;
 	double observedvariable;
+	char seen; //For RPI decision to move
 
 //---------------- Sum Product -------------------------------------------
 //List of pointers to messages coming into node

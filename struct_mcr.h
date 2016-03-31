@@ -2,16 +2,16 @@ typedef struct mcr
 {
   //FULL IMAGE
   double *image;
-  int size_x; //Pixels in x
-  int size_y; //Pixels in y
+  int size_row; //Corresponds to height
+  int size_col; //Corresponds to width
 
   //For Graph
-  int nrow; //Number of frames in each direction
-  int ncol;
+  int nrow; //Number of Frames Going Down - Corresponds to height
+  int ncol; //Number of Frames Going Across - Corresponds to width
 
   //Discretised Image size
-  int d_size_x; //Discretised size x
-  int d_size_y; //Discretised size_y
+  int n_pixel_row; //Discretised size (Going Down) Corresponds to height
+  int n_pixel_col; //Discretised size (Going Across) Corresponds to width
 
   //Full list of discretised image
   mIMG **FullList;
@@ -27,8 +27,8 @@ typedef struct mcr
   int nbuff;
 
   //Position of Micr
-  int curr_x;
-  int curr_y;
+  int curr_row; //Corresponds to height
+  int curr_col; //Corresponds to width
 
   //-----------------------HFACTOR STUFF-------------------------------------
   //FOR MRF

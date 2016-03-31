@@ -6,5 +6,6 @@ typedef struct mvec
 	unsigned sender; //Node that send message
 	double* vector; //input vector values here.
 
-} mvec;
+	double *states; //USED ONLY FOR MARGINALS
 
+} mvec;

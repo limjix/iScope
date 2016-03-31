@@ -5,30 +5,290 @@
                                                                                              
 >0003 button_0c1 'script', for panel 0
                                                                                         
-<0004 tj4.script                                                                                                               
-<0005 Graph Init Successful                                                                                                    
-<0006 Node x2 observed to be 0.500000                                                                                          
-<0007 Node x6 observed to be 1.000000                                                                                          
-<0008 Sum Product Successful                                                                                                   
-<0009 File Output: SumProductResults.txt                                                                                       
-<0010 context c:0 active
-                                                                                                      
-<0011 context b:0 active by proxy
-                                                                                             
->0012 button_0c1 'script', for panel 0
-                                                                                        
-<0013 tj5.script                                                                                                               
-<0014 Graph Init Successful                                                                                                    
-<0015 Node x2 observed to be 0.500000                                                                                          
-<0016 Node x6 observed to be 1.000000                                                                                          
-<0017 Max Sum Successful                                                                                                       
-<0018 File Output: MaxProductResults.txt                                                                                       
-<0019 context c:0 active
-                                                                                                      
-<0020 context b:0 active by proxy
-                                                                                             
->0021 button_0c1 'script', for panel 0
-                                                                                        
-<0022 tj6.script                                                                                                               
-<0023 Graph Init Successful                                                                                                    
-<0024 File Output: LoopySumProductResults.txt                                                                                  
+<0004 tmicr.script                                                                                                             
+<0005 Moved 1                                                                                                                  
+<0006                                                                                                                          
+<0007 Curr Row = 1, Curr Col = 1                                                                                               
+<0008                                                                                                                          
+<0009 Moved 1                                                                                                                  
+<0010                                                                                                                          
+<0011 Curr Row = 1, Curr Col = 2                                                                                               
+<0012                                                                                                                          
+<0013 Moved 1                                                                                                                  
+<0014                                                                                                                          
+<0015 Curr Row = 1, Curr Col = 3                                                                                               
+<0016                                                                                                                          
+<0017 Moved 1                                                                                                                  
+<0018                                                                                                                          
+<0019 Curr Row = 1, Curr Col = 4                                                                                               
+<0020                                                                                                                          
+<0021 Moved 1                                                                                                                  
+<0022                                                                                                                          
+<0023 Curr Row = 1, Curr Col = 5                                                                                               
+<0024                                                                                                                          
+<0025 Moved 1                                                                                                                  
+<0026                                                                                                                          
+<0027 Curr Row = 1, Curr Col = 6                                                                                               
+<0028                                                                                                                          
+<0029 Moved 1                                                                                                                  
+<0030                                                                                                                          
+<0031 Curr Row = 1, Curr Col = 7                                                                                               
+<0032                                                                                                                          
+<0033 Moved 1                                                                                                                  
+<0034                                                                                                                          
+<0035 Curr Row = 1, Curr Col = 8                                                                                               
+<0036                                                                                                                          
+<0037 Moved 1                                                                                                                  
+<0038                                                                                                                          
+<0039 Curr Row = 1, Curr Col = 9                                                                                               
+<0040                                                                                                                          
+<0041 File Output: MICRRESULTS2.txt                                                                                            
+<0042 File Output: GRAPHSTRUCTURE.txt                                                                                          
+<0043 Moved 3                                                                                                                  
+<0044                                                                                                                          
+<0045 Curr Row = 2, Curr Col = 9                                                                                               
+<0046                                                                                                                          
+<0047 Moved 2                                                                                                                  
+<0048                                                                                                                          
+<0049 Curr Row = 2, Curr Col = 8                                                                                               
+<0050                                                                                                                          
+<0051 Moved 2                                                                                                                  
+<0052                                                                                                                          
+<0053 Curr Row = 2, Curr Col = 7                                                                                               
+<0054                                                                                                                          
+<0055 Moved 2                                                                                                                  
+<0056                                                                                                                          
+<0057 Curr Row = 2, Curr Col = 6                                                                                               
+<0058                                                                                                                          
+<0059 Moved 2                                                                                                                  
+<0060                                                                                                                          
+<0061 Curr Row = 2, Curr Col = 5                                                                                               
+<0062                                                                                                                          
+<0063 Moved 2                                                                                                                  
+<0064                                                                                                                          
+<0065 Curr Row = 2, Curr Col = 4                                                                                               
+<0066                                                                                                                          
+<0067 Moved 2                                                                                                                  
+<0068                                                                                                                          
+<0069 Curr Row = 2, Curr Col = 3                                                                                               
+<0070                                                                                                                          
+<0071 Moved 2                                                                                                                  
+<0072                                                                                                                          
+<0073 Curr Row = 2, Curr Col = 2                                                                                               
+<0074                                                                                                                          
+<0075 Moved 2                                                                                                                  
+<0076                                                                                                                          
+<0077 Curr Row = 2, Curr Col = 1                                                                                               
+<0078                                                                                                                          
+<0079 Moved 2                                                                                                                  
+<0080                                                                                                                          
+<0081 Curr Row = 2, Curr Col = 0                                                                                               
+<0082                                                                                                                          
+<0083 File Output: MICRRESULTS3.txt                                                                                            
+<0084 Moved 3                                                                                                                  
+<0085                                                                                                                          
+<0086 Curr Row = 3, Curr Col = 0                                                                                               
+<0087                                                                                                                          
+<0088 Moved 1                                                                                                                  
+<0089                                                                                                                          
+<0090 Curr Row = 3, Curr Col = 1                                                                                               
+<0091                                                                                                                          
+<0092 Moved 1                                                                                                                  
+<0093                                                                                                                          
+<0094 Curr Row = 3, Curr Col = 2                                                                                               
+<0095                                                                                                                          
+<0096 Moved 1                                                                                                                  
+<0097                                                                                                                          
+<0098 Curr Row = 3, Curr Col = 3                                                                                               
+<0099                                                                                                                          
+<0100 Moved 1                                                                                                                  
+<0101                                                                                                                          
+<0102 Curr Row = 3, Curr Col = 4                                                                                               
+<0103                                                                                                                          
+<0104 Moved 1                                                                                                                  
+<0105                                                                                                                          
+<0106 Curr Row = 3, Curr Col = 5                                                                                               
+<0107                                                                                                                          
+<0108 Moved 1                                                                                                                  
+<0109                                                                                                                          
+<0110 Curr Row = 3, Curr Col = 6                                                                                               
+<0111                                                                                                                          
+<0112 Moved 1                                                                                                                  
+<0113                                                                                                                          
+<0114 Curr Row = 3, Curr Col = 7                                                                                               
+<0115                                                                                                                          
+<0116 Moved 1                                                                                                                  
+<0117                                                                                                                          
+<0118 Curr Row = 3, Curr Col = 8                                                                                               
+<0119                                                                                                                          
+<0120 Moved 1                                                                                                                  
+<0121                                                                                                                          
+<0122 Curr Row = 3, Curr Col = 9                                                                                               
+<0123                                                                                                                          
+<0124 File Output: MICRRESULTS4.txt                                                                                            
+<0125 Moved 3                                                                                                                  
+<0126                                                                                                                          
+<0127 Curr Row = 4, Curr Col = 9                                                                                               
+<0128                                                                                                                          
+<0129 Moved 2                                                                                                                  
+<0130                                                                                                                          
+<0131 Curr Row = 4, Curr Col = 8                                                                                               
+<0132                                                                                                                          
+<0133 Moved 2                                                                                                                  
+<0134                                                                                                                          
+<0135 Curr Row = 4, Curr Col = 7                                                                                               
+<0136                                                                                                                          
+<0137 Moved 2                                                                                                                  
+<0138                                                                                                                          
+<0139 Curr Row = 4, Curr Col = 6                                                                                               
+<0140                                                                                                                          
+<0141 Moved 2                                                                                                                  
+<0142                                                                                                                          
+<0143 Curr Row = 4, Curr Col = 5                                                                                               
+<0144                                                                                                                          
+<0145 Moved 2                                                                                                                  
+<0146                                                                                                                          
+<0147 Curr Row = 4, Curr Col = 4                                                                                               
+<0148                                                                                                                          
+<0149 Moved 2                                                                                                                  
+<0150                                                                                                                          
+<0151 Curr Row = 4, Curr Col = 3                                                                                               
+<0152                                                                                                                          
+<0153 Moved 2                                                                                                                  
+<0154                                                                                                                          
+<0155 Curr Row = 4, Curr Col = 2                                                                                               
+<0156                                                                                                                          
+<0157 Moved 2                                                                                                                  
+<0158                                                                                                                          
+<0159 Curr Row = 4, Curr Col = 1                                                                                               
+<0160                                                                                                                          
+<0161 Moved 2                                                                                                                  
+<0162                                                                                                                          
+<0163 Curr Row = 4, Curr Col = 0                                                                                               
+<0164                                                                                                                          
+<0165 File Output: MICRRESULTS5.txt                                                                                            
+<0166 Moved 3                                                                                                                  
+<0167                                                                                                                          
+<0168 Curr Row = 5, Curr Col = 0                                                                                               
+<0169                                                                                                                          
+<0170 Moved 1                                                                                                                  
+<0171                                                                                                                          
+<0172 Curr Row = 5, Curr Col = 1                                                                                               
+<0173                                                                                                                          
+<0174 Moved 1                                                                                                                  
+<0175                                                                                                                          
+<0176 Curr Row = 5, Curr Col = 2                                                                                               
+<0177                                                                                                                          
+<0178 Moved 1                                                                                                                  
+<0179                                                                                                                          
+<0180 Curr Row = 5, Curr Col = 3                                                                                               
+<0181                                                                                                                          
+<0182 Moved 1                                                                                                                  
+<0183                                                                                                                          
+<0184 Curr Row = 5, Curr Col = 4                                                                                               
+<0185                                                                                                                          
+<0186 Moved 1                                                                                                                  
+<0187                                                                                                                          
+<0188 Curr Row = 5, Curr Col = 5                                                                                               
+<0189                                                                                                                          
+<0190 Moved 1                                                                                                                  
+<0191                                                                                                                          
+<0192 Curr Row = 5, Curr Col = 6                                                                                               
+<0193                                                                                                                          
+<0194 Moved 1                                                                                                                  
+<0195                                                                                                                          
+<0196 Curr Row = 5, Curr Col = 7                                                                                               
+<0197                                                                                                                          
+<0198 Moved 1                                                                                                                  
+<0199                                                                                                                          
+<0200 Curr Row = 5, Curr Col = 8                                                                                               
+<0201                                                                                                                          
+<0202 Moved 1                                                                                                                  
+<0203                                                                                                                          
+<0204 Curr Row = 5, Curr Col = 9                                                                                               
+<0205                                                                                                                          
+<0206 File Output: MICRRESULTS6.txt                                                                                            
+<0207 File Output: GRAPHSTRUCTURE.txt                                                                                          
+<0208 Moved 3                                                                                                                  
+<0209                                                                                                                          
+<0210 Curr Row = 6, Curr Col = 9                                                                                               
+<0211                                                                                                                          
+<0212 Moved 2                                                                                                                  
+<0213                                                                                                                          
+<0214 Curr Row = 6, Curr Col = 8                                                                                               
+<0215                                                                                                                          
+<0216 Moved 2                                                                                                                  
+<0217                                                                                                                          
+<0218 Curr Row = 6, Curr Col = 7                                                                                               
+<0219                                                                                                                          
+<0220 Moved 2                                                                                                                  
+<0221                                                                                                                          
+<0222 Curr Row = 6, Curr Col = 6                                                                                               
+<0223                                                                                                                          
+<0224 Moved 2                                                                                                                  
+<0225                                                                                                                          
+<0226 Curr Row = 6, Curr Col = 5                                                                                               
+<0227                                                                                                                          
+<0228 Moved 2                                                                                                                  
+<0229                                                                                                                          
+<0230 Curr Row = 6, Curr Col = 4                                                                                               
+<0231                                                                                                                          
+<0232 Moved 2                                                                                                                  
+<0233                                                                                                                          
+<0234 Curr Row = 6, Curr Col = 3                                                                                               
+<0235                                                                                                                          
+<0236 Moved 2                                                                                                                  
+<0237                                                                                                                          
+<0238 Curr Row = 6, Curr Col = 2                                                                                               
+<0239                                                                                                                          
+<0240 Moved 2                                                                                                                  
+<0241                                                                                                                          
+<0242 Curr Row = 6, Curr Col = 1                                                                                               
+<0243                                                                                                                          
+<0244 Moved 2                                                                                                                  
+<0245                                                                                                                          
+<0246 Curr Row = 6, Curr Col = 0                                                                                               
+<0247                                                                                                                          
+<0248 File Output: MICRRESULTS7.txt                                                                                            
+<0249 Moved 3                                                                                                                  
+<0250                                                                                                                          
+<0251 Curr Row = 7, Curr Col = 0                                                                                               
+<0252                                                                                                                          
+<0253 Moved 1                                                                                                                  
+<0254                                                                                                                          
+<0255 Curr Row = 7, Curr Col = 1                                                                                               
+<0256                                                                                                                          
+<0257 Moved 1                                                                                                                  
+<0258                                                                                                                          
+<0259 Curr Row = 7, Curr Col = 2                                                                                               
+<0260                                                                                                                          
+<0261 Moved 1                                                                                                                  
+<0262                                                                                                                          
+<0263 Curr Row = 7, Curr Col = 3                                                                                               
+<0264                                                                                                                          
+<0265 Moved 1                                                                                                                  
+<0266                                                                                                                          
+<0267 Curr Row = 7, Curr Col = 4                                                                                               
+<0268                                                                                                                          
+<0269 Moved 1                                                                                                                  
+<0270                                                                                                                          
+<0271 Curr Row = 7, Curr Col = 5                                                                                               
+<0272                                                                                                                          
+<0273 Moved 1                                                                                                                  
+<0274                                                                                                                          
+<0275 Curr Row = 7, Curr Col = 6                                                                                               
+<0276                                                                                                                          
+<0277 Moved 1                                                                                                                  
+<0278                                                                                                                          
+<0279 Curr Row = 7, Curr Col = 7                                                                                               
+<0280                                                                                                                          
+<0281 Moved 1                                                                                                                  
+<0282                                                                                                                          
+<0283 Curr Row = 7, Curr Col = 8                                                                                               
+<0284                                                                                                                          
+<0285 Moved 1                                                                                                                  
+<0286                                                                                                                          
+<0287 Curr Row = 7, Curr Col = 9                                                                                               
+<0288                                                                                                                          
+<0289 File Output: MICRRESULTS8.txt                                                                                            
+<0290 File Output: GRAPHSTRUCTURE.txt                                                                                          
