@@ -1,13 +1,11 @@
 typedef struct mcr
 {
+
+  //---SIMULATION
   //FULL IMAGE
   double *image;
   int size_row; //Corresponds to height
   int size_col; //Corresponds to width
-
-  //For Graph
-  int nrow; //Number of Frames Going Down - Corresponds to height
-  int ncol; //Number of Frames Going Across - Corresponds to width
 
   //Discretised Image size
   int n_pixel_row; //Discretised size (Going Down) Corresponds to height
@@ -26,9 +24,26 @@ typedef struct mcr
   mIMG **buff;
   int nbuff;
 
+  //------ACTUAL MICROSCOPE
   //Position of Micr
+  int rownodeduration;
+  int colnodeduration;
+
   int curr_row; //Corresponds to height
   int curr_col; //Corresponds to width
+  int prev_row;
+  int prev_col;
+
+  //RPI Stuff
+  int freq; //Fixed
+  int dur;
+  char axis;
+  char pm;
+
+  //-----Shared---------------------------------------------
+  //For Graph
+  int nrow; //Number of Frames Going Down - Corresponds to height
+  int ncol; //Number of Frames Going Across - Corresponds to width
 
   //-----------------------HFACTOR STUFF-------------------------------------
   //FOR MRF

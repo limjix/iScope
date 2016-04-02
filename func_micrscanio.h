@@ -13,11 +13,11 @@ mIMG *acquireimage(mcr *MCR, int row, int col);
 nodes *QueryGraph(hgph *graph, int row, int col);
 double HeuristicOnTissue(mIMG *image, mcr *MCR);
 
-void mimicthresholding();
-
-//Stuff For the actual thing
-void *micrscan_MeanImageHeuristic(void *arglist);
-void thresholding();
-
 //DEBUGGING PRINT
 void *micrscan_GraphStructToFile(void *arglist);
+
+//Stuff For the actual microscope
+double MeanImageHeuristic(rgb *image);
+void *micrscan_AnalyseBuf(void *arglist);
+void *UpdateLocation(void *arglist);
+void *micrscan_scaninit(void *arglist);

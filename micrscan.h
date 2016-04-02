@@ -15,6 +15,7 @@
 #include "struct_hfactor.h"
 #include "struct_mIMG.h"
 #include "struct_mcr.h"
+#include "struct_hvideo.h"
 
 #include "func_callbackio.h"
 #include "func_dynamicio.h"

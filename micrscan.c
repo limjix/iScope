@@ -362,6 +362,8 @@ void *micrscan_drivemicroscope(void *arglist)
 
 void *micrscan_CreateMicrGraph(void *arglist)
 {
+  //CREATES MRF graph based on NCOL & NROW
+
   hgph *graph;
   void *mcrptr;
   mcr *MCR;
@@ -569,7 +571,7 @@ void *micrscan_DecideNextMove(void *arglist)
   nodes *node;
   hfactor *hfac;
   char minfound = 'f';
-  int mincol, maxcol;
+  int mincol, maxcol, curr_col;
   mcr *MCR;
 
   //Get Graph
@@ -599,17 +601,46 @@ void *micrscan_DecideNextMove(void *arglist)
     }
 
     //Determine if maxcol
-    if(hfac->MostLikelyState==1)
+    if(hfac->MostLikelyState==1.0)
     {
       maxcol = i;
     }
 
   }
 
+  //2. Determine what needs to happen
+  int distancetomin, distancetomax;
+
+  curr_col = MCR->curr_col;
+  distancetomin = curr_col-mincol;
+  distancetomax = maxcol - curr_col;
+
+  if(distancetomin>0 && distancetomax>0) //Current position in centre of tissue
+  {
+      //1. Go shorter distance
+      if(distancetomin<distancetomax) //If going to left quicker than right
+      {
+
+      }
+      else //If going to right quicker than left
+      {
+
+      }
+      //2. Backtrack to longer distance
+  }
+  else if(distancetomin<0 && distancetomax>0) //Current position to the left of tissue
+  {
+      //Just go to the right
+  }
+  else if(distancetomin>0 && distancetomax<0) //Current position to the right of issue
+  {
+      //Just go to the left
+  }
+
 
   //Return
   arglist = NULL;
-  //dynamic_putarg("dur.dur","dur",(void*) duration,SZ,&arglist);
+
   return arglist;
 }
 
@@ -745,96 +776,8 @@ nodes *QueryGraph(hgph *graph, int row, int col)
 }
 
 
-//-----------------------------------------------------------------------------
-//--------------------------- Heuristic --------------------------------------
-//-----------------------------------------------------------------------------
 
-double HeuristicOnTissue(mIMG *image, mcr *MCR)
-{
-//-------- Determins average light intensity in photo
-	double hValue;
-  double *imagebox = image->image;
 
-	int size_col = MCR->n_pixel_col; //Number of x pixels
-	int size_row = MCR->n_pixel_row; //Number of y pixels
-
- //Sum out number of 1s in the image
-	double sum = 0;
-	int i;
-	for(i = 0; i < (size_col*size_row) ; i++) // For every pixel
-	{
-		sum = sum + imagebox[i];
-	}
-
- //Take an average
-	hValue = sum/(size_row*size_col) ;
-
-	return hValue;
-}
-
-//------------------------------------------------------------------------------
-//-------------------------- Thresholding Functions ----------------------------
-//------------------------------------------------------------------------------
-
-void mimicthresholding()
-{
-
-}
-
-//-----------------------------------------------------------------------------
-//------------------------- STUFF FOR THE ACTUAL MICROSCOPE -------------------
-//-----------------------------------------------------------------------------
-void *micrscan_MeanImageHeuristic(void *arglist)
-{
-  //-----Tests image manipulation
-  //-------WORKS TO GIVE MEAN OF IMAGE
-  void *rgbptr;
-  rgb *image;
-  uint8_t *red, *green, *blue;
-  double *BW, sum, mean;
-  int width,height,i;
-
-  if(dynamic_getarg(arglist,"rgb",&rgbptr)=='f') return NULL;
-  if(!invalidptr(E,rgbptr)) image=(rgb *) rgbptr;
-
-  //-------------Find mean of the channel
-  red = image->cred;
-  green = image->cgreen;
-  blue = image->cblue;
-
-  width = image->width;
-  height = image->height;
-
-  BW = (double *)imalloc(E, width*height*sizeof(double));
-
-  for(i=0;i<width*height;i++)
-  {
-    BW[i] = sqrt((double)red[i]*(double)red[i]+(double)green[i]*(double)green[i]+(double)blue[i]*(double)blue[i]);
-  }
-
-//------------------------------Find mean--------------------------------------
-  sum = 0;
-  for(i=0;i<width*height;i++)
-  {
-    sum = sum+BW[i];
-  }
-
-  mean = sum/(width*height);
-
-//--------------------------------Find max------------------------------------
-//  double max = 0;
-//  for(i=0;i<width*height;i++)
-//  {
-//    if(BW[i]>max) max = BW[i];
-//  }
-
-  return NULL;
-}
-
-void thresholding()
-{
-
-}
 
 //----------------------------------------------------------------------------
 //------------------------- Write to File ------------------------------------
@@ -930,4 +873,435 @@ void *micrscan_GraphStructToFile(void *arglist)
   	fclose(fpointer);
 
   	return;
+}
+
+//-----------------------------------------------------------------------------
+//--------------------------- Heuristic --------------------------------------
+//-----------------------------------------------------------------------------
+
+double HeuristicOnTissue(mIMG *image, mcr *MCR)
+{
+//-------- Determins average light intensity in photo
+	double hValue;
+  double *imagebox = image->image;
+
+	int size_col = MCR->n_pixel_col; //Number of x pixels
+	int size_row = MCR->n_pixel_row; //Number of y pixels
+
+ //Sum out number of 1s in the image
+	double sum = 0;
+	int i;
+	for(i = 0; i < (size_col*size_row) ; i++) // For every pixel
+	{
+		sum = sum + imagebox[i];
+	}
+
+ //Take an average
+	hValue = sum/(size_row*size_col) ;
+
+	return hValue;
+}
+
+
+//-----------------------------------------------------------------------------
+//------------------------- ACTUAL MICROSCOPE ---------------------------------
+//-----------------------------------------------------------------------------
+double MeanImageHeuristic(rgb *image)
+{
+  //TAKES IN RGB , GIVES OUT MEAN OF THE IMAGE
+  void *rgbptr;
+  uint8_t *red, *green, *blue;
+  double *BW, sum, mean;
+  int width,height,i;
+
+//  if(dynamic_getarg(arglist,"rgb",&rgbptr)=='f') return NULL;
+//  if(!invalidptr(E,rgbptr)) image=(rgb *) rgbptr;
+
+  //-------------Find mean of the channel
+  red = image->cred;
+  green = image->cgreen;
+  blue = image->cblue;
+
+  width = image->width;
+  height = image->height;
+
+  BW = (double *)imalloc(E, width*height*sizeof(double));
+
+  for(i=0;i<width*height;i++)
+  {
+    BW[i] = sqrt((double)red[i]*(double)red[i]+(double)green[i]*(double)green[i]+(double)blue[i]*(double)blue[i]);
+  }
+
+//------------------------------Find mean--------------------------------------
+  sum = 0;
+  for(i=0;i<width*height;i++)
+  {
+    sum = sum+BW[i];
+  }
+
+  mean = sum/(width*height);
+
+//--------------------------------Find max------------------------------------
+//  double max = 0;
+//  for(i=0;i<width*height;i++)
+//  {
+//    if(BW[i]>max) max = BW[i];
+//  }
+
+  return mean;
+}
+
+void *micrscan_AnalyseBuf(void *arglist)
+{
+  //Analyses buffer to attach observations to the graph
+
+    void *argptr, *argptr2, *argptr3;
+    hvideo *vid;
+    int i,j,k;
+    hgph *graph;
+    mcr *MCR;
+
+    //Buffer stuff
+    uint8_t *red;
+    uint8_t *green;
+    uint8_t *blue;
+    int ix;
+    int iy;
+    int nx;
+    int ny;
+    uint64_t bufpt;
+    uint64_t rgbpt;
+    rgb *image = (rgb *)imalloc(E,sizeof(rgb));
+
+    //Node search variables
+    double mean;
+    nodes *fnode, *vnode, *gvnode;
+    char vname[MAXLEN], fname[MAXLEN], findname[MAXLEN];;
+    hfactor *hfac, *gvhfac;
+    int row;
+    int col;
+
+    //Gets hVideo structure
+    if(dynamic_getarg(arglist,"hvideo",&argptr)=='f') return NULL;
+    if(!invalidptr(E,argptr)) vid=(hvideo *) argptr;
+
+    if(dynamic_getarg(arglist,"hgph",&argptr2)=='f') return NULL;
+    if(!invalidptr(E,argptr2)) graph = (hgph *)argptr2;
+
+    if(dynamic_getarg(arglist,"mcr",&argptr3)=='f') return NULL;
+    if(!invalidptr(E,argptr3)) MCR = (mcr *)argptr3;
+
+    //Get video info
+    int nframes = vid->nframes;
+    nx = vid->xres;
+    ny = vid->yres;
+    uint8_t *buf = vid->videobuf;
+    image->width = nx;
+    image->height = ny;
+
+    red=(uint8_t *)imalloc(E,vid->xres*vid->yres*vid->ncolours*sizeof(uint8_t));
+    green=(uint8_t *)imalloc(E,vid->xres*vid->yres*vid->ncolours*sizeof(uint8_t));
+    blue=(uint8_t *)imalloc(E,vid->xres*vid->yres*vid->ncolours*sizeof(uint8_t));
+
+    //For every frame stuck in the buffer
+    for(i=0;i<nframes;i++)
+    {
+
+      //Form Image
+      for(iy=0;iy<ny;iy++)
+      {
+        for(ix=0;ix<nx;ix++)
+        {
+          bufpt=3*ix+iy*3*nx;
+          rgbpt=ix+iy*nx;
+          red[rgbpt]=vid->videobuf[bufpt+0];
+          green[rgbpt]=vid->videobuf[bufpt+1];
+          blue[rgbpt]=vid->videobuf[bufpt+2];
+        }
+      }
+
+      //Append
+      image->cred = red;
+      image->cgreen = green;
+      image->cblue = blue;
+
+      //Analyse
+      mean = MeanImageHeuristic(image);
+
+      //Find graph coordinates
+      //Axis and PM were the actions just undertaken
+      if(MCR->axis == 'x' && MCR->pm == '+')
+      {
+        row = MCR->curr_row;
+        col = MCR->prev_col + ;
+      }
+      else if(MCR->axis == 'x' && MCR->pm == '-')
+      {
+        row = MCR->curr_row;
+        col = MCR->prev_col - ;
+      }
+      else if(MCR->axis == 'y' && MCR->pm == '+')
+      {
+        row = MCR->curr_row;
+        col = MCR->prev_col;
+      }
+      else if(MCR->axis == 'y' && MCR->pm == '-')
+      {
+        row = MCR->curr_row;
+        col = MCR->prev_col;
+      }
+      else
+      {
+        //ERROR
+      }
+
+      //Create Variable node
+      sprintf(vname, "O%d%d", row, col);
+      vnode = createnode(col,row,vname,graph,'v');
+
+      //Create Factor Node
+      sprintf(fname, "FO%d%d", row, col);
+      fnode = createnode(col,row,fname,graph,'f');
+
+      //Populate Factor Node
+      hfac = (hfactor*) fnode->ndata;
+      hfac->probdist = MCR->OBSprobdist;
+      hfac->columndiscretevalues = MCR->OBScolvals;
+      hfac->rowdiscretevalues = MCR->OBSrowvals;
+      hfac->nrow = MCR->OBSnrow;
+      hfac->ncol = MCR->OBSncol;
+
+      //Find relevant node on graph
+      gvnode = (nodes *)QueryGraph(graph,row,col);
+
+      //Create Edges
+      add_edge(vnode,fnode);
+      add_edge(fnode,gvnode);
+
+      gvhfac = (hfactor*) gvnode->ndata;
+
+      //Hfac Labels
+      hfac->columnlabel = str_hash(vname);
+      sprintf(findname,"V%d%d",row,col);
+      hfac->rowlabel = str_hash(findname);
+
+      //Mark Variable Node as Seen
+      ((hfactor *)vnode->ndata)->observed = 't';
+      gvhfac->seen = 't';
+
+      //Threshold
+      if(mean>0.2)
+      {
+        mean = 1.0;
+      }
+      else
+      {
+        mean = -1.0;
+      }
+
+      //Observedvariable
+      ((hfactor *)vnode->ndata)->observedvariable = mean;
+    }
+
+    //Free
+    red = ifree(E,red);
+    green = ifree(E,green);
+    blue = ifree(E,blue);
+
+    arglist = NULL;
+    return arglist;
+}
+
+void *UpdateLocation(void *arglist)
+{
+//Function to update microscope position in MCR
+
+  void *mcrptr, *argptr1, *argptr2, *argptr3;
+  mcr *MCR;
+  int dur;
+  char *pm, *axis;
+
+  if(dynamic_getarg(arglist,"mcr",&mcrptr)=='f') return NULL;
+  if(!invalidptr(E,mcrptr)) MCR = (mcr *)mcrptr;
+
+  if(dynamic_getarg(arglist,"dur",&argptr1)=='f') return NULL;
+  if(!invalidptr(E,argptr1)) dur = *((int *)argptr1);
+
+  if(dynamic_getarg(arglist,"pm",&argptr2)=='f') return NULL;
+  if(!invalidptr(E,argptr2)) pm = (char *)argptr2;
+
+  if(dynamic_getarg(arglist,"axis",&argptr3)=='f') return NULL;
+  if(!invalidptr(E,argptr3)) axis = (char *)argptr3;
+
+  int prev_row = MCR->curr_row;
+  int prev_col = MCR->curr_col;
+  MCR->prev_row = prev_row;
+  MCR->prev_col = prev_col;
+
+  //Update
+  MCR->pm = *pm;
+  MCR->dur = dur;
+  MCR->axis = *axis;
+
+  if(*axis == 'x' && *pm =='+')
+  {
+    MCR->curr_row = prev_row;
+    MCR->curr_col = prev_col + dur/50;
+  }
+  else if(*axis == 'x' && *pm == '-')
+  {
+    MCR->curr_row = prev_row;
+    MCR->curr_col = prev_col - dur/50;
+  }
+  else if(*axis == 'y' && *pm == '+')
+  {
+    MCR->curr_row = prev_row + dur/50;
+    MCR->curr_col = prev_col;
+  }
+  else if(*axis == 'y' && *pm == '-')
+  {
+    MCR->curr_row = prev_row - dur/50;
+    MCR->curr_col = prev_col;
+  }
+
+  arglist = NULL;
+  return arglist;
+}
+
+void *micrscan_scaninit(void *arglist)
+{
+  //-----------SETUP OF PROBLEM ------ ACTUAL MICROSCOPE
+  void *xptr, *argptr2, *argptr3, *argptr4, *argptr5;
+  char *filename;
+  FILE *fptr;
+  int height,width;
+  double store;
+  mcr *MCRDat;
+  int i,j,k,n;
+  mIMG **imglist;
+  int curr_row;
+  int curr_col;
+
+  //Get Height and Width
+  if(dynamic_getarg(arglist,"HeightDur",&argptr2)=='f') return NULL;
+  if(!invalidptr(E,argptr)) height=*((int *) argptr2);
+
+  if(dynamic_getarg(arglist,"WidthDur",&argptr3)=='f') return NULL;
+  if(!invalidptr(E,argptr)) width=*((int *) argptr3);
+
+  //Get current row & col
+  if(dynamic_getarg(arglist,"CurrCol",&argptr4)=='f') return NULL;
+  if(!invalidptr(E,argptr4)) curr_col=*((int *) argptr4);
+
+  if(dynamic_getarg(arglist,"CurrRow",&argptr5)=='f') return NULL;
+  if(!invalidptr(E,argptr5)) curr_row=*((int *) argptr5);
+
+  //Get xclient
+  if(dynamic_getarg(arglist,"xclient",&xptr)=='f') return NULL;
+
+  double *image = (double *)imalloc(E,height*width*sizeof(double));
+
+  //Creates MCRDAT
+  MCRDat = (mcr *)imalloc(E,1*sizeof(mcr));
+  MCRDat->rownodeduration = 50; //1 Node in the row direction represents 50 miliseconds
+  MCRDat->colnodeduration = 50; //1 Node in the col direction represents 50 miliseconds
+
+  MCRDat->nrow = height / (MCRDat->rownodeduration); //Graph has nrows
+  MCRDat->ncol = width / (MCRDat->colnodeduration); //Graph has ncols
+
+  //Default RPI stuff
+  MCRDat->freq = 50;
+
+  //DISCRETISES FULL IMAGE
+  imglist = (mIMG **) discretisefullslide(image, MCRDat);
+
+  //----------------Create Factor Node Details--------------------------------
+  //---- Use Ising Model
+
+  double nu, beta;
+  nu = 2.1;
+  beta = 1.0;
+
+  //FOR MRF-------------
+  double *MRFcolvals = (double *)imalloc(E,2*sizeof(double));
+  MRFcolvals[0] = -1;
+  MRFcolvals[1] = 1;
+
+  double *MRFrowvals = (double *)imalloc(E,2*sizeof(double));
+  MRFrowvals[0] = -1;
+  MRFrowvals[1] = 1;
+
+  int MRFnrow = 2;
+  int MRFncol = 2;
+
+  double *MRFprobdist = (double *)imalloc(E,4*sizeof(double));
+  MRFprobdist[0] = exp(beta*MRFcolvals[0]*MRFrowvals[0]);
+  MRFprobdist[1] = exp(beta*MRFcolvals[1]*MRFrowvals[0]);
+  MRFprobdist[2] = exp(beta*MRFcolvals[0]*MRFrowvals[1]);
+  MRFprobdist[3] = exp(beta*MRFcolvals[1]*MRFrowvals[1]);
+
+  //Normalise
+  double sum = 0;
+  for(i=0;i<MRFnrow*MRFncol;i++)
+  {
+    sum = sum + MRFprobdist[i];
+  }
+
+  for(i=0;i<MRFnrow*MRFncol;i++)
+  {
+    MRFprobdist[i] = MRFprobdist[i]/sum;
+  }
+
+  //FOR OBSERVATIONS--------
+  double *OBScolvals = (double *)imalloc(E,2*sizeof(double));
+  OBScolvals[0] = -1;
+  OBScolvals[1] = 1;
+
+  double *OBSrowvals = (double *)imalloc(E,2*sizeof(double));
+  OBSrowvals[0] = -1;
+  OBSrowvals[1] = 1;
+
+  double *OBSprobdist = (double *)imalloc(E,4*sizeof(double));
+  OBSprobdist[0] = exp(nu*MRFcolvals[0]*MRFrowvals[0]);
+  OBSprobdist[1] = exp(nu*MRFcolvals[1]*MRFrowvals[0]);
+  OBSprobdist[2] = exp(nu*MRFcolvals[0]*MRFrowvals[1]);
+  OBSprobdist[3] = exp(nu*MRFcolvals[1]*MRFrowvals[1]);
+
+  int OBSnrow = 2;
+  int OBSncol = 2;
+
+  //Normalise
+  sum = 0;
+  for(i=0;i<OBSnrow*OBSncol;i++)
+  {
+    sum = sum + OBSprobdist[i];
+  }
+
+  for(i=0;i<OBSnrow*OBSncol;i++)
+  {
+    OBSprobdist[i] = OBSprobdist[i]/sum;
+  }
+
+  //Append-------------------------------------------------------------------
+  MCRDat->curr_row = curr_row;
+  MCRDat->curr_col = curr_col;
+
+  //FOR MRF
+  MCRDat->MRFprobdist = MRFprobdist;
+  MCRDat->MRFcolvals = MRFcolvals;
+  MCRDat->MRFrowvals = MRFrowvals;
+  MCRDat->MRFnrow = MRFnrow;
+  MCRDat->MRFncol = MRFncol;
+
+  //FOR OBSERVATIONS
+  MCRDat->OBSprobdist = OBSprobdist;
+  MCRDat->OBScolvals = OBScolvals;
+  MCRDat->OBSrowvals = OBSrowvals;
+  MCRDat->OBSnrow = OBSnrow;
+  MCRDat->OBSncol = OBSncol;
+
+  //Output to arglist -------------------------------------------------------
+	arglist=NULL;
+	dynamic_putarg("MCRDat.mcr","mcr",(void*) MCRDat,SZ,&arglist);
+  return arglist;
 }

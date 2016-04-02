@@ -1,4 +1,4 @@
-mcr:mcr<=micrscan.init<=Filename:'Blob3.slide', Heightpx:40, Widthpx:50, Row:1 , Col:0, xclient:xclient;
+mcr:mcr<=micrscan.init<=Filename:'Blob.slide', Heightpx:40, Widthpx:50, Row:1 , Col:0, xclient:xclient;
 graph:hgph<=micrscan.CreateMicrGraph<=mcr:mcr;
 
 <=micrscan.drivemicroscope<=mcr:mcr,xclient:xclient,nframes:9,direction:1;
